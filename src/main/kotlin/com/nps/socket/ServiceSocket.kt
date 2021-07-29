@@ -1,5 +1,7 @@
 package com.nps.socket
 
+import com.nps.common.ThreadPoolCommon
+import java.io.*
 import java.net.ServerSocket
 import java.net.Socket
 
@@ -9,27 +11,40 @@ import java.net.Socket
 class ServiceSocket {
 
     fun connect() {
-        Thread {
+        ThreadPoolCommon.scheduledThreadPoolExecutor.execute {
             val ss = ServerSocket(8025)
-            ServerThread(ss).start()
-        }.start()
+            while (true) {
+                try {
+                    val accept = ss.accept()
+                    val br = BufferedInputStream(accept.getInputStream())
+                    val pw = BufferedOutputStream(accept.getOutputStream())
+                    var len = 0
+                    while(br.read().apply { len = this }!=-1){
+                        println(len.toString())
+                    }
+
+                    pw.write(1)
+                    pw.flush()
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+
+            }
+        }
     }
 }
 
-internal class ServerThread(private val ss: ServerSocket) : Thread() {
-
+internal class ServerThread(private val socket: Socket) : Runnable {
     override fun run() {
-        super.run()
+        val br = socket.getInputStream().bufferedReader()
+        val pw = PrintWriter(socket.getOutputStream(), true)
+
         while (true) {
-            val accept = ss.accept()
-            val br = accept.getInputStream().bufferedReader()
-            var str = ""
-            while (br.readLine() != null) {
-                str += br.readLine()
-            }
-            println("服务端接收到消息：$str")
-            val bw = accept.getOutputStream().bufferedWriter()
-            bw.write("服务端接收到消息：${str}")
+            val readLine = br.readLine()
+            println("服务端接收到消息：$readLine")
+            pw.write("服务端发出消息：${readLine}")
         }
+        br.close()
+        pw.close()
     }
 }
