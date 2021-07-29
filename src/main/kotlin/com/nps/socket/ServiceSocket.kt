@@ -1,28 +1,35 @@
 package com.nps.socket
 
-import java.io.BufferedInputStream
 import java.net.ServerSocket
 import java.net.Socket
 
+/**
+ * Socket服务端
+ */
 class ServiceSocket {
 
     fun connect() {
-        ServerSocket(8025).use { ss: ServerSocket ->
-            while (true) {
-                ss.accept().getInputStream().buffered().use { bis: BufferedInputStream ->
-
-                }
-            }
-        }
+        Thread {
+            val ss = ServerSocket(8025)
+            ServerThread(ss).start()
+        }.start()
     }
 }
 
-internal class ServerThread(private val socket: Socket): Thread() {
+internal class ServerThread(private val ss: ServerSocket) : Thread() {
 
     override fun run() {
         super.run()
-        socket.use { s: Socket ->
-            val br = s.getInputStream().bufferedReader()
+        while (true) {
+            val accept = ss.accept()
+            val br = accept.getInputStream().bufferedReader()
+            var str = ""
+            while (br.readLine() != null) {
+                str += br.readLine()
+            }
+            println("服务端接收到消息：$str")
+            val bw = accept.getOutputStream().bufferedWriter()
+            bw.write("服务端接收到消息：${str}")
         }
     }
 }
