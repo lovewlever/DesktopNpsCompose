@@ -29,8 +29,8 @@ fun FileDirectoryOrListCompose(
         mutableStateOf(rootDirectory)
     }
 
-    var filesListState = remember {
-        mutableStateListOf<InteractiveData>()
+    val filesListState = remember {
+        mutableStateOf<List<InteractiveData>>(listOf())
     }
 
     DisposableEffect(key1 = rootDirectoryState) {
@@ -42,7 +42,7 @@ fun FileDirectoryOrListCompose(
 
     SideEffect {
         ClientSocket.directoryListCallback = {
-            filesListState = it.toMutableStateList()
+            filesListState.value = it
         }
         ClientSocket.connect()
     }
@@ -78,7 +78,7 @@ fun FileDirectoryOrListCompose(
         LazyColumn(
             modifier = Modifier.fillMaxWidth()
         ) {
-            items(filesListState) { file ->
+            items(filesListState.value) { file ->
                 if (file.isDirectory) {
                     FileDirectoryCompose(
                         interactiveData = file,
