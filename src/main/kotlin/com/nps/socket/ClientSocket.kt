@@ -1,5 +1,10 @@
 package com.nps.socket
 
+import com.nps.common.ThreadPoolCommon
+import java.io.BufferedInputStream
+import java.io.FileOutputStream
+import java.io.PipedWriter
+import java.io.PrintWriter
 import java.net.Socket
 
 /**
@@ -8,21 +13,34 @@ import java.net.Socket
 class ClientSocket {
 
     private lateinit var socket: Socket
+    private lateinit var printWriter: PrintWriter
 
     fun connect() {
-        Thread {
+        ThreadPoolCommon.scheduled.execute {
             socket = Socket("127.0.0.1", 8025)
-            val br = this.socket.getInputStream().bufferedReader()
-            val readLine = br.readLine()
-            println("客户端收到消息：$readLine")
-        }.start()
+        }
     }
 
-    fun sentMsg(msg: String) {
+    fun sentMsg(filePath: String, savePath: String) {
+
         if (this::socket.isInitialized) {
-            val bw = this.socket.getOutputStream().bufferedWriter()
-            println("客户端发消息给服务端：$msg")
-            bw.write(msg)
+            printWriter = PrintWriter(socket.getOutputStream(), true)
+            printWriter.println(filePath/*"D:\\Documents\\AndroidProjects\\Navigation\\app\\release\\app-release.apk"*/)
+            saveFile(savePath)
         }
+    }
+
+    private fun saveFile(path: String) {
+        ThreadPoolCommon.scheduled.execute {
+            val buf = socket.getInputStream().buffered()
+            val bos = FileOutputStream(path/*"C:\\Users\\AOC\\Desktop\\release.apk"*/).buffered()
+            var len: Int
+            while (buf.read().also { len = it } != -1) {
+                bos.write(len)
+            }
+            bos.flush()
+            bos.close()
+        }
+
     }
 }

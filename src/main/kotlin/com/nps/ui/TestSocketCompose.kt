@@ -65,7 +65,10 @@ fun TestSocketCompose() {
                 Spacer(modifier = Modifier.width(8.dp))
                 Button(
                     onClick = {
-                        socketClient.sentMsg(sendText)
+                        socketClient.sentMsg(
+                            "D:\\Documents\\AndroidProjects\\Navigation\\app\\release\\app-release.apk",
+                            "C:\\Users\\AOC\\Desktop\\release.apk"
+                        )
                     }
                 ) {
                     Text(text = "发送")
