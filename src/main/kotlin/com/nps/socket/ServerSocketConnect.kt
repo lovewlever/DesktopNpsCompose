@@ -60,6 +60,7 @@ internal class DataProgressServerStream(
                 bos.write(len)
             }
             bos.flush()
+            fis.close()
         }
     }
 
