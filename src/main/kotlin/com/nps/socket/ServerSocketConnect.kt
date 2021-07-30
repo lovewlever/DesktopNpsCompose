@@ -76,6 +76,7 @@ internal class DataProgressServerStream(
                 )
             }?.let { list: List<InteractiveData> ->
                 bw.println(GsonCommon.gson.toJson(list))
+                bw.print("\n")
             }
         }
     }
