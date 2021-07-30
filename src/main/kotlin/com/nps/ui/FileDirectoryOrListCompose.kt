@@ -15,31 +15,33 @@ import androidx.compose.ui.res.svgResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.nps.common.Base64Common
+import com.nps.common.SocketInteractiveKey
+import com.nps.common.suffixText
+import com.nps.model.InteractiveData
+import com.nps.socket.ClientSocket
 import java.io.File
+import java.util.*
 import javax.swing.plaf.IconUIResource
 
 @Composable
 fun FileDirectoryOrListCompose(
-    rootDirectory: String
+    rootDirectory: String = "C:\\"
 ) {
-    var rootDirectoryState by remember {
-        mutableStateOf(rootDirectory)
-    }
 
     val filesListState = remember {
-        derivedStateOf {
-            File(rootDirectoryState).listFiles()?.toMutableList()?.toMutableStateList() ?: mutableStateListOf()
-        }
+        mutableStateOf<List<InteractiveData>>(listOf())
     }
 
-    DisposableEffect(key1 = rootDirectoryState) {
-        filesListState.value.clear()
-        filesListState.value.addAll(
-            File(rootDirectoryState).listFiles()?.toMutableList()?.toMutableStateList() ?: mutableStateListOf()
-        )
-        onDispose {
-
+    LaunchedEffect(key1 = Unit) {
+        ClientSocket.directoryListCallback = {
+            filesListState.value = it
         }
+        ClientSocket.connect(rootDirectory)
+    }
+
+    var rootDirectoryState by remember {
+        mutableStateOf(rootDirectory)
     }
 
     Column(
@@ -59,6 +61,7 @@ fun FileDirectoryOrListCompose(
                         .clickable {
                             File(rootDirectoryState).parent?.let {
                                 rootDirectoryState = it
+                                ClientSocket.sentMsg(SocketInteractiveKey.GetDirectory, it, "")
                             }
                     }
                 )
@@ -74,16 +77,25 @@ fun FileDirectoryOrListCompose(
             modifier = Modifier.fillMaxWidth()
         ) {
             items(filesListState.value) { file ->
-                if (file?.isDirectory == true) {
+                if (file.isDirectory) {
                     FileDirectoryCompose(
-                        file = file,
+                        interactiveData = file,
                         directoryClick = {
-                            rootDirectoryState = file.absolutePath
+                            rootDirectoryState = file.filePath
+                            ClientSocket.sentMsg(SocketInteractiveKey.GetDirectory, file.filePath, "")
                         }
                     )
                 } else {
                     FileCompose(
-                        file = file
+                        interactiveData = file,
+                        downloadClick = {
+                            file.fileName + file.filePath.subSequence(file.filePath.lastIndexOf("."), file.filePath.length)
+                            ClientSocket.sentMsg(
+                                SocketInteractiveKey.Download,
+                                file.filePath,
+                                "C:\\Users\\AOC\\Desktop\\${file.fileName}.${file.filePath.suffixText(".")}"
+                            )
+                        }
                     )
                 }
             }
@@ -93,7 +105,7 @@ fun FileDirectoryOrListCompose(
 
 @Composable
 private fun FileDirectoryCompose(
-    file: File,
+    interactiveData: InteractiveData,
     directoryClick: () -> Unit = {}
 ) {
     Row(
@@ -113,13 +125,13 @@ private fun FileDirectoryCompose(
             modifier = Modifier.size(30.dp)
         )
         Spacer(modifier = Modifier.width(8.dp))
-        Text(text = file.name)
+        Text(text = interactiveData.fileName)
     }
 }
 
 @Composable
 private fun FileCompose(
-    file: File,
+    interactiveData: InteractiveData,
     downloadClick: () -> Unit = {}
 ) {
     Row(
@@ -137,9 +149,9 @@ private fun FileCompose(
         )
         Spacer(modifier = Modifier.width(8.dp))
         Column {
-            Text(text = file.name)
+            Text(text = interactiveData.fileName)
             Text(
-                text = file.path,
+                text = interactiveData.filePath,
                 fontSize = 12.sp,
                 color = Color.Gray,
                 overflow = TextOverflow.Ellipsis,
@@ -147,9 +159,13 @@ private fun FileCompose(
             )
         }
         Spacer(modifier = Modifier.weight(1f))
-        Button(onClick = {
+        Button(
+            contentPadding = PaddingValues(0.dp),
+            modifier = Modifier.height(30.dp),
+            onClick = {
             downloadClick()
-        }) {
+        }
+        ) {
             Text(text = "下载")
         }
     }

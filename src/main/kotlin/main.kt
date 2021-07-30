@@ -1,13 +1,37 @@
 import androidx.compose.desktop.Window
 import androidx.compose.material.MaterialTheme
-import com.nps.ui.TestSocketCompose
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import com.nps.common.ServiceType
+import com.nps.ui.ChooseServiceTypeCompose
+import com.nps.ui.FileDirectoryOrListCompose
+import com.nps.ui.ServicePageCompose
 
 fun main() = Window(
     //icon = ImageIO.read(File("nps.png"))
 ) {
     MaterialTheme {
-        TestSocketCompose()
+        //TestSocketCompose()
         //FileDirectoryOrListCompose("/")
-        //ChooseServiceTypeCompose()
+        var serviceTypeState: ServiceType by remember {
+            mutableStateOf(ServiceType.TypeChooseSC)
+        }
+        when (serviceTypeState) {
+            ServiceType.TypeChooseSC -> {
+                ChooseServiceTypeCompose {
+                    serviceTypeState = it
+                }
+            }
+            is ServiceType.TypeServer -> {
+                ServicePageCompose()
+            }
+            is ServiceType.TypeClient -> {
+                FileDirectoryOrListCompose()
+            }
+            else -> {}
+        }
+
     }
 }
