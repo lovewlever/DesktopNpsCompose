@@ -20,7 +20,7 @@ import javax.swing.plaf.IconUIResource
 
 @Composable
 fun FileDirectoryOrListCompose(
-    rootDirectory: String
+    rootDirectory: String = "D:\\"
 ) {
     var rootDirectoryState by remember {
         mutableStateOf(rootDirectory)

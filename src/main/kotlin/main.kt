@@ -6,7 +6,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import com.nps.common.ServiceType
 import com.nps.ui.ChooseServiceTypeCompose
-import com.nps.ui.TestSocketCompose
+import com.nps.ui.FileDirectoryOrListCompose
+import com.nps.ui.ServicePageCompose
 
 fun main() = Window(
     //icon = ImageIO.read(File("nps.png"))
@@ -24,10 +25,10 @@ fun main() = Window(
                 }
             }
             is ServiceType.TypeServer -> {
-                TestSocketCompose()
+                ServicePageCompose()
             }
             is ServiceType.TypeClient -> {
-                TestSocketCompose()
+                FileDirectoryOrListCompose()
             }
             else -> {}
         }

@@ -1,30 +1,29 @@
 package com.nps.socket
 
-import androidx.compose.runtime.SideEffect
-import com.nps.common.NPCCommon
 import com.nps.common.ThreadPoolCommon
-import java.io.BufferedInputStream
 import java.io.FileOutputStream
-import java.io.PipedWriter
 import java.io.PrintWriter
 import java.net.Socket
 
 /**
  * Socket客户端
  */
-class ClientSocket {
+object ClientSocket {
 
     private lateinit var socket: Socket
     private lateinit var printWriter: PrintWriter
 
-    fun connect() {
+    fun connect(errorCallback: (String) -> Unit = {}) {
         ThreadPoolCommon.scheduled.execute {
-            socket = Socket("127.0.0.1", 2000)
+            try {
+                socket = Socket("127.0.0.1", 2000)
+            } catch (e: Exception) {
+                errorCallback("${e.message}")
+            }
         }
     }
 
     fun sentMsg(filePath: String, savePath: String) {
-
         if (this::socket.isInitialized) {
             printWriter = PrintWriter(socket.getOutputStream(), true)
             printWriter.println(filePath/*"D:\\Documents\\AndroidProjects\\Navigation\\app\\release\\app-release.apk"*/)

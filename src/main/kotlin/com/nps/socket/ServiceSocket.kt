@@ -1,5 +1,6 @@
 package com.nps.socket
 
+import com.nps.common.ServiceInfoLog
 import com.nps.common.ThreadPoolCommon
 import java.io.FileInputStream
 import java.io.IOException
@@ -9,21 +10,31 @@ import java.net.Socket
 /**
  * Socket服务端
  */
-class ServiceSocket {
+object ServiceSocket {
 
-    fun connect() {
+    fun connect(
+        callback: (ServiceInfoLog, String) -> Unit = { _,_ -> }
+    ) {
         ThreadPoolCommon.scheduled.execute {
-            val ss = ServerSocket(8025)
-            while (true) {
-                val accept = ss.accept()
-                println(accept.localAddress.address.toString())
-                ServerStream(accept)
+            try {
+                val ss = ServerSocket(8025)
+                callback(ServiceInfoLog.LogInfo, "启动成功，等待连接")
+                while (true) {
+                    val accept = ss.accept()
+                    callback(ServiceInfoLog.LogInfo, "客户端连接：${accept.localAddress.address}")
+                    ServerStream(accept) { serviceInfoLog, string ->
+                        callback(serviceInfoLog, string)
+                    }
+                }
+            } catch (e: Exception) {
+                callback(ServiceInfoLog.LogError, "${e.message}")
+                e.printStackTrace()
             }
         }
     }
 }
 
-internal class ServerStream(socket: Socket) {
+internal class ServerStream(socket: Socket, callback: (ServiceInfoLog, String) -> Unit = { _,_ -> }) {
     private val br = socket.getInputStream().bufferedReader()
     private val bw = socket.getOutputStream().buffered()
 
@@ -31,6 +42,7 @@ internal class ServerStream(socket: Socket) {
         try {
             var str: String
             while (br.readLine().apply { str = this } != null) {
+                callback(ServiceInfoLog.LogInfo, "收到消息：${str}")
                 if (str == "-1") {
                     break
                 } else {
@@ -38,16 +50,19 @@ internal class ServerStream(socket: Socket) {
                 }
             }
         } catch (e: IOException) {
+            callback(ServiceInfoLog.LogError, "${e.message}")
             e.printStackTrace()
         } finally {
             try {
                 br.close()
             } catch (e: IOException) {
+                callback(ServiceInfoLog.LogError, "${e.message}")
                 e.printStackTrace()
             }
             try {
                 bw.close()
             } catch (e: IOException) {
+                callback(ServiceInfoLog.LogError, "${e.message}")
                 e.printStackTrace()
             }
         }

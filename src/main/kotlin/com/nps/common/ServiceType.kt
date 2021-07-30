@@ -6,3 +6,8 @@ sealed class ServiceType {
     object TypeClient: ServiceType()
     object TypeChooseSC: ServiceType()
 }
+
+sealed class ServiceInfoLog {
+    object LogError: ServiceInfoLog()
+    object LogInfo: ServiceInfoLog()
+}
