@@ -48,7 +48,7 @@ internal class DataProgressServerStream(
     override fun interactiveProgress(interactiveData: InteractiveData, bw: OutputStream) {
         when(interactiveData.key) {
             SocketInteractiveKey.GetDirectory ->
-                sentLocalDirectoryList(interactiveData.value, PrintWriter(bw))
+                sentLocalDirectoryList(interactiveData.value, PrintWriter(bw, true))
         }
     }
 
