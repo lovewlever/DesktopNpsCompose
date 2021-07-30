@@ -66,8 +66,8 @@ fun TestSocketCompose() {
                 Button(
                     onClick = {
                         socketClient.sentMsg(
-                            "D:\\Documents\\AndroidProjects\\Navigation\\app\\release\\app-release.apk",
-                            "C:\\Users\\AOC\\Desktop\\release.apk"
+                            "C:\\Users\\53273\\Downloads\\Broadcom_bluetooth_12004900w8.zip",
+                            "C:\\Users\\AOC\\Desktop\\release.zip"
                         )
                     }
                 ) {
