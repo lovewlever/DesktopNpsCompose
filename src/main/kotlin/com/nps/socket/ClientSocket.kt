@@ -12,7 +12,6 @@ import kotlin.jvm.Throws
  */
 object ClientSocket {
 
-
     var directoryListCallback: (MutableList<InteractiveData>) -> Unit = {}
     private var socket: Socket? = null
     private var printWriter: PrintWriter? = null
@@ -40,13 +39,10 @@ object ClientSocket {
         println(ThreadPoolCommon.scheduled.activeCount)
         ThreadPoolCommon.scheduled.execute {
             try {
-                socket?.getInputStream()?.let { iis: InputStream ->
-                    println(iis::class.simpleName)
-                    when (key) {
-                        SocketInteractiveKey.GetDirectory ->
-                            getDirectoryListStream(BufferedReader(iis.bufferedReader()))
-                        SocketInteractiveKey.Download ->
-                            saveFile(savePath, BufferedInputStream(iis))
+                socket?.getInputStream()?.buffered()?.let { bis: BufferedInputStream ->
+                    var len: Int
+                    while (bis.read().also { len = it } != -1) {
+
                     }
                 }
             } catch (e: Exception) {
@@ -55,6 +51,7 @@ object ClientSocket {
             }
         }
     }
+
 
     @Throws
     private fun saveFile(savePath: String, buf: BufferedInputStream) {
@@ -81,4 +78,8 @@ object ClientSocket {
             }
         }
     }
+}
+
+fun main() {
+    println(0xfe)
 }

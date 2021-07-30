@@ -38,13 +38,13 @@ class ServerSocketConnect {
 }
 
 internal class DataProgressServerStream(
-    socket: Socket
+    val socket: Socket
 ): ServerStream(socket) {
 
     override fun interactiveProgress(interactiveData: InteractiveData, bw: OutputStream) {
         when(interactiveData.key) {
             SocketInteractiveKey.GetDirectory ->
-                sentLocalDirectoryList(interactiveData.value, PrintWriter(bw, true))
+                sentLocalDirectoryList(interactiveData.value, bw.buffered())
             SocketInteractiveKey.Download ->
                 sentFileStream(localPath = interactiveData.value, BufferedOutputStream(bw))
         }
@@ -61,23 +61,24 @@ internal class DataProgressServerStream(
             }
             bos.flush()
             fis.close()
+            //socket.shutdownOutput()
         }
     }
 
     /**
      * 发送本地目录到客户端
      */
-    private fun sentLocalDirectoryList(localPath: String, bw: PrintWriter) {
+    private fun sentLocalDirectoryList(localPath: String, bw: BufferedOutputStream) {
         val file = File(localPath)
         if (file.isFile) {
-            bw.println(
+            bw.write(
                 GsonCommon.gson.toJson(
-                    InteractiveData(
+                    mutableListOf(InteractiveData(
                         key = SocketInteractiveKey.GetDirectory,
                         fileName = file.name,
                         filePath = file.absolutePath
-                    )
-                )
+                    ))
+                ).encodeToByteArray()
             )
         } else if (file.isDirectory) {
             file.listFiles()?.map { f ->
@@ -88,7 +89,9 @@ internal class DataProgressServerStream(
                     isDirectory = f.isDirectory
                 )
             }?.let { list: List<InteractiveData> ->
-                bw.println(GsonCommon.gson.toJson(list))
+                bw.write(
+                    GsonCommon.gson.toJson(list).encodeToByteArray()
+                )
             }
         }
     }
