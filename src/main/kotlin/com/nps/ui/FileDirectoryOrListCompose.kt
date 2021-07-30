@@ -41,10 +41,10 @@ fun FileDirectoryOrListCompose(
     }
 
     SideEffect {
-        ClientSocket.connect()
         ClientSocket.directoryListCallback = {
             filesListState = it.toMutableStateList()
         }
+        ClientSocket.connect()
     }
 
     Column(

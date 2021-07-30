@@ -11,7 +11,19 @@ object GsonCommon {
     fun jsonParser(string: String): JsonElement =
         JsonParser.parseString(string)
 
-    fun isJsonObj(string: String):Boolean {
-        return jsonParser(string).isJsonObject
+    fun isJsonObj(string: String?):Boolean {
+        string?.let {
+            return jsonParser(string).isJsonObject
+        } ?: let {
+            return false
+        }
+    }
+
+    fun isJsonArr(string: String?):Boolean {
+        string?.let {
+            return jsonParser(string).isJsonArray
+        } ?: let {
+            return false
+        }
     }
 }

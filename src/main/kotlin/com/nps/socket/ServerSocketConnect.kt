@@ -71,8 +71,8 @@ internal class DataProgressServerStream(
             file.listFiles()?.map { f ->
                 InteractiveData(
                     key = SocketInteractiveKey.GetDirectory,
-                    fileName = file.name,
-                    filePath = file.path
+                    fileName = f.name,
+                    filePath = f.path
                 )
             }?.let { list: List<InteractiveData> ->
                 bw.println(GsonCommon.gson.toJson(list))
