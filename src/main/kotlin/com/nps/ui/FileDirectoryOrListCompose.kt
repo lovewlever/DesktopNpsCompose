@@ -25,19 +25,9 @@ import javax.swing.plaf.IconUIResource
 fun FileDirectoryOrListCompose(
     rootDirectory: String = "D:\\"
 ) {
-    var rootDirectoryState by remember {
-        mutableStateOf(rootDirectory)
-    }
 
     val filesListState = remember {
         mutableStateOf<List<InteractiveData>>(listOf())
-    }
-
-    DisposableEffect(key1 = rootDirectoryState) {
-        ClientSocket.sentMsg(SocketInteractiveKey.GetDirectory, rootDirectoryState, "")
-        onDispose {
-
-        }
     }
 
     SideEffect {
@@ -45,6 +35,17 @@ fun FileDirectoryOrListCompose(
             filesListState.value = it
         }
         ClientSocket.connect()
+    }
+
+    var rootDirectoryState by remember {
+        mutableStateOf(rootDirectory)
+    }
+
+    DisposableEffect(key1 = rootDirectoryState) {
+        ClientSocket.sentMsg(SocketInteractiveKey.GetDirectory, rootDirectoryState, "")
+        onDispose {
+
+        }
     }
 
     Column(

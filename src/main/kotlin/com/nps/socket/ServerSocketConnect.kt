@@ -63,7 +63,7 @@ internal class DataProgressServerStream(
                     InteractiveData(
                         key = SocketInteractiveKey.GetDirectory,
                         fileName = file.name,
-                        filePath = file.path
+                        filePath = file.absolutePath
                     )
                 )
             )
@@ -72,12 +72,11 @@ internal class DataProgressServerStream(
                 InteractiveData(
                     key = SocketInteractiveKey.GetDirectory,
                     fileName = f.name,
-                    filePath = f.path,
+                    filePath = f.absolutePath,
                     isDirectory = f.isDirectory
                 )
             }?.let { list: List<InteractiveData> ->
                 bw.println(GsonCommon.gson.toJson(list))
-                bw.print("\n")
             }
         }
     }

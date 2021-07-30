@@ -27,6 +27,7 @@ object ClientSocket {
                 printWriter = PrintWriter(socket?.getOutputStream()!!, true)
                 logCallback(ServiceInfoLog.LogError, "连接成功")
                 sentMsg(SocketInteractiveKey.GetDirectory, "C:\\", "")
+                inputStreamProgress(SocketInteractiveKey.GetDirectory)
             } catch (e: Exception) {
                 logCallback(ServiceInfoLog.LogError, "${e.message}")
             }
@@ -35,7 +36,6 @@ object ClientSocket {
 
     fun sentMsg(key: String, filePath: String, savePath: String) {
         printWriter?.println(GsonCommon.gson.toJson(InteractiveData(key = key, value = filePath)))
-        inputStreamProgress(key)
     }
 
     private fun inputStreamProgress(key: String) {
