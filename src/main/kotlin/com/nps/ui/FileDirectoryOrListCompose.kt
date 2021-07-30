@@ -61,6 +61,7 @@ fun FileDirectoryOrListCompose(
                         .clickable {
                             File(rootDirectoryState).parent?.let {
                                 rootDirectoryState = it
+                                ClientSocket.sentMsg(SocketInteractiveKey.GetDirectory, it, "")
                             }
                     }
                 )

@@ -41,6 +41,7 @@ object ClientSocket {
         ThreadPoolCommon.scheduled.execute {
             try {
                 socket?.getInputStream()?.let { iis: InputStream ->
+                    println(iis::class.simpleName)
                     when (key) {
                         SocketInteractiveKey.GetDirectory ->
                             getDirectoryListStream(BufferedReader(iis.bufferedReader()))
