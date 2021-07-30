@@ -17,7 +17,7 @@ object ClientSocket {
     var logCallback: (ServiceInfoLog, String) -> Unit = { _, _ -> }
     var directoryListCallback: (MutableList<InteractiveData>) -> Unit = {}
     private var socket: Socket? = null
-    private lateinit var printWriter: PrintWriter
+    private var printWriter: PrintWriter? = null
 
     fun connect() {
         if (socket != null && socket?.isClosed == false) return
@@ -26,6 +26,7 @@ object ClientSocket {
                 socket = Socket("127.0.0.1", 2000)
                 printWriter = PrintWriter(socket?.getOutputStream()!!, true)
                 logCallback(ServiceInfoLog.LogError, "连接成功")
+                sentMsg(SocketInteractiveKey.GetDirectory, "D:\\", "")
             } catch (e: Exception) {
                 logCallback(ServiceInfoLog.LogError, "${e.message}")
             }
@@ -33,7 +34,7 @@ object ClientSocket {
     }
 
     fun sentMsg(key: String, filePath: String, savePath: String) {
-        printWriter.println(filePath)
+        printWriter?.println(GsonCommon.gson.toJson(InteractiveData(key = key, value = filePath)))
         inputStreamProgress(key)
     }
 

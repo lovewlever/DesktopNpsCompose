@@ -9,10 +9,8 @@ import java.io.PrintWriter
 import java.net.ServerSocket
 import java.net.Socket
 
-class ServerSocketConnect(
-    protected var logCallback: (ServiceInfoLog, String) -> Unit = { _, _ -> }
-) {
-
+class ServerSocketConnect {
+    var logCallback: (ServiceInfoLog, String) -> Unit = { _, _ -> }
     protected var serverSocket: ServerSocket? = null
 
     fun startServer() {
@@ -50,7 +48,7 @@ internal class DataProgressServerStream(
     override fun interactiveProgress(interactiveData: InteractiveData, bw: OutputStream) {
         when(interactiveData.key) {
             SocketInteractiveKey.GetDirectory ->
-                sentLocalDirectoryList(interactiveData.key, PrintWriter(bw))
+                sentLocalDirectoryList(interactiveData.value, PrintWriter(bw))
         }
     }
 

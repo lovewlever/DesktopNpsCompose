@@ -16,7 +16,9 @@ object ServiceSocket {
     var logCallback: (ServiceInfoLog, String) -> Unit = { _, _ -> }
 
     private val serverSocketConnect by lazy {
-        ServerSocketConnect(logCallback)
+        ServerSocketConnect().also { ssc ->
+            ssc.logCallback = logCallback
+        }
     }
 
     fun startServer() {
