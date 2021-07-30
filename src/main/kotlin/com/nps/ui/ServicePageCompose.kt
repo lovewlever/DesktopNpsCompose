@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.nps.common.AppLogCallbackCommon
 import com.nps.common.ServiceInfoLog
 import com.nps.socket.ClientSocket
 import com.nps.socket.ServiceSocket
@@ -24,7 +25,7 @@ fun ServicePageCompose() {
         mutableStateListOf<Pair<ServiceInfoLog, String>>(ServiceInfoLog.LogInfo to "")
     }
     SideEffect {
-        ServiceSocket.logCallback = { serviceInfoLog, string ->
+        AppLogCallbackCommon.logCallback = { serviceInfoLog, string ->
             infoListState.add(serviceInfoLog to string)
         }
         ServiceSocket.startServer()

@@ -10,7 +10,6 @@ import java.net.ServerSocket
 import java.net.Socket
 
 class ServerSocketConnect {
-    var logCallback: (ServiceInfoLog, String) -> Unit = { _, _ -> }
     protected var serverSocket: ServerSocket? = null
 
     fun startServer() {
@@ -18,14 +17,14 @@ class ServerSocketConnect {
         ThreadPoolCommon.scheduled.execute {
             try {
                 serverSocket = ServerSocket(8025)
-                logCallback(ServiceInfoLog.LogInfo, "启动成功，等待连接")
+                AppLogCallbackCommon.logCallback(ServiceInfoLog.LogInfo, "启动成功，等待连接")
                 while (true) {
                     val accept = serverSocket?.accept()
-                    logCallback(ServiceInfoLog.LogInfo, "客户端连接：${accept?.localAddress?.address}")
+                    AppLogCallbackCommon.logCallback(ServiceInfoLog.LogInfo, "客户端连接：${accept?.localAddress?.address}")
                     accept?.let { DataProgressServerStream(accept).start() }
                 }
             } catch (e: Exception) {
-                logCallback(ServiceInfoLog.LogError, "${e.message}")
+                AppLogCallbackCommon.logCallback(ServiceInfoLog.LogError, "${e.message}")
                 e.printStackTrace()
             }
         }
@@ -41,9 +40,8 @@ class ServerSocketConnect {
 }
 
 internal class DataProgressServerStream(
-    socket: Socket,
-    logCallback: (ServiceInfoLog, String) -> Unit = { _, _ -> }
-): ServerStream(socket, logCallback) {
+    socket: Socket
+): ServerStream(socket) {
 
     override fun interactiveProgress(interactiveData: InteractiveData, bw: OutputStream) {
         when(interactiveData.key) {
@@ -83,8 +81,7 @@ internal class DataProgressServerStream(
 }
 
 abstract class ServerStream(
-    socket: Socket,
-    val logCallback: (ServiceInfoLog, String) -> Unit = { _, _ -> }
+    socket: Socket
 ): Thread() {
     private val br = socket.getInputStream().bufferedReader()
     private val bw = socket.getOutputStream()
@@ -94,7 +91,7 @@ abstract class ServerStream(
         try {
             var str: String
             while (br.readLine().apply { str = this } != null) {
-                logCallback(ServiceInfoLog.LogInfo, "收到消息：${str}")
+                AppLogCallbackCommon.logCallback(ServiceInfoLog.LogInfo, "收到消息：${str}")
                 val tId = str.toInteractiveData() ?: break
                 if (tId.key == SocketInteractiveKey.CloseSocket) {
                     break
@@ -103,19 +100,19 @@ abstract class ServerStream(
                 }
             }
         } catch (e: IOException) {
-            logCallback(ServiceInfoLog.LogError, "${e.message}")
+            AppLogCallbackCommon.logCallback(ServiceInfoLog.LogError, "${e.message}")
             e.printStackTrace()
         } finally {
             try {
                 br.close()
             } catch (e: IOException) {
-                logCallback(ServiceInfoLog.LogError, "${e.message}")
+                AppLogCallbackCommon.logCallback(ServiceInfoLog.LogError, "${e.message}")
                 e.printStackTrace()
             }
             try {
                 bw.close()
             } catch (e: IOException) {
-                logCallback(ServiceInfoLog.LogError, "${e.message}")
+                AppLogCallbackCommon.logCallback(ServiceInfoLog.LogError, "${e.message}")
                 e.printStackTrace()
             }
         }

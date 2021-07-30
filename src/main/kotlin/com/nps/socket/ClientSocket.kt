@@ -14,7 +14,7 @@ import kotlin.jvm.Throws
  */
 object ClientSocket {
 
-    var logCallback: (ServiceInfoLog, String) -> Unit = { _, _ -> }
+
     var directoryListCallback: (MutableList<InteractiveData>) -> Unit = {}
     private var socket: Socket? = null
     private var printWriter: PrintWriter? = null
@@ -25,11 +25,11 @@ object ClientSocket {
             try {
                 socket = Socket("127.0.0.1", 2000)
                 printWriter = PrintWriter(socket?.getOutputStream()!!, true)
-                logCallback(ServiceInfoLog.LogError, "连接成功")
+                AppLogCallbackCommon.logCallback(ServiceInfoLog.LogError, "连接成功")
                 sentMsg(SocketInteractiveKey.GetDirectory, "C:\\", "")
                 inputStreamProgress(SocketInteractiveKey.GetDirectory)
             } catch (e: Exception) {
-                logCallback(ServiceInfoLog.LogError, "${e.message}")
+                AppLogCallbackCommon.logCallback(ServiceInfoLog.LogError, "${e.message}")
             }
         }
     }
@@ -47,7 +47,7 @@ object ClientSocket {
                 }
             }
         } catch (e: Exception) {
-            logCallback(ServiceInfoLog.LogError, "${e.message}")
+            AppLogCallbackCommon.logCallback(ServiceInfoLog.LogError, "${e.message}")
             e.printStackTrace()
         }
     }
