@@ -24,9 +24,10 @@ fun ServicePageCompose() {
         mutableStateListOf<Pair<ServiceInfoLog, String>>(ServiceInfoLog.LogInfo to "")
     }
     SideEffect {
-        ServiceSocket.connect(callback = { serviceInfoLog, string ->
+        ServiceSocket.startServer()
+        ServiceSocket.logCallback = { serviceInfoLog, string ->
             infoListState.add(serviceInfoLog to string)
-        })
+        }
     }
     Surface(
         modifier = Modifier.fillMaxSize()

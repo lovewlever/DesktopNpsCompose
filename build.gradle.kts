@@ -18,6 +18,8 @@ repositories {
 
 dependencies {
     implementation(compose.desktop.currentOs)
+    implementation (group = "com.google.code.gson", name = "gson", version = "2.8.7")
+
 }
 
 tasks.withType<KotlinCompile>() {

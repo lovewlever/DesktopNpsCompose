@@ -1,47 +1,78 @@
 package com.nps.socket
 
-import com.nps.common.ThreadPoolCommon
-import java.io.FileOutputStream
+import com.google.gson.reflect.TypeToken
+import com.nps.common.*
+import com.nps.model.InteractiveData
+import java.io.BufferedReader
+import java.io.InputStream
 import java.io.PrintWriter
 import java.net.Socket
+import kotlin.jvm.Throws
 
 /**
  * Socket客户端
  */
 object ClientSocket {
 
-    private lateinit var socket: Socket
+    var logCallback: (ServiceInfoLog, String) -> Unit = { _, _ -> }
+    var directoryListCallback: (MutableList<InteractiveData>) -> Unit = {}
+    private var socket: Socket? = null
     private lateinit var printWriter: PrintWriter
 
-    fun connect(errorCallback: (String) -> Unit = {}) {
+    fun connect() {
+        if (socket != null && socket?.isClosed == false) return
         ThreadPoolCommon.scheduled.execute {
             try {
                 socket = Socket("127.0.0.1", 2000)
+                printWriter = PrintWriter(socket?.getOutputStream()!!, true)
+                logCallback(ServiceInfoLog.LogError, "连接成功")
             } catch (e: Exception) {
-                errorCallback("${e.message}")
+                logCallback(ServiceInfoLog.LogError, "${e.message}")
             }
         }
     }
 
-    fun sentMsg(filePath: String, savePath: String) {
-        if (this::socket.isInitialized) {
-            printWriter = PrintWriter(socket.getOutputStream(), true)
-            printWriter.println(filePath/*"D:\\Documents\\AndroidProjects\\Navigation\\app\\release\\app-release.apk"*/)
-            saveFile(savePath)
+    fun sentMsg(key: String, filePath: String, savePath: String) {
+        printWriter.println(filePath)
+        inputStreamProgress(key)
+    }
+
+    private fun inputStreamProgress(key: String) {
+        try {
+            socket?.getInputStream()?.let { iis: InputStream ->
+                when (key) {
+                    SocketInteractiveKey.GetDirectory ->
+                        getDirectoryListStream(iis.bufferedReader())
+                }
+            }
+        } catch (e: Exception) {
+            logCallback(ServiceInfoLog.LogError, "${e.message}")
+            e.printStackTrace()
         }
     }
 
+    @Throws
     private fun saveFile(path: String) {
-        ThreadPoolCommon.scheduled.execute {
-            val buf = socket.getInputStream().buffered()
-            val bos = FileOutputStream(path/*"C:\\Users\\AOC\\Desktop\\release.apk"*/).buffered()
+        /*ThreadPoolCommon.scheduled.execute {
+            val buf = socket?.getInputStream().buffered()
+            val bos = FileOutputStream(path*//*"C:\\Users\\AOC\\Desktop\\release.apk"*//*).buffered()
             var len: Int
             while (buf.read().also { len = it } != -1) {
                 bos.write(len)
             }
             bos.flush()
-            bos.close()
-        }
+        }*/
+    }
 
+    @Throws
+    private fun getDirectoryListStream(iis: BufferedReader) {
+        iis.forEachLine { json ->
+            if (GsonCommon.isJsonObj(json)) {
+                GsonCommon.gson.fromJson<MutableList<InteractiveData>>(
+                    json, object :TypeToken<MutableList<InteractiveData>>(){}.type)?.let { itds: MutableList<InteractiveData> ->
+                    directoryListCallback(itds)
+                }
+            }
+        }
     }
 }

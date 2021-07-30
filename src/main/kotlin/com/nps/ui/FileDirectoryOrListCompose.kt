@@ -15,6 +15,9 @@ import androidx.compose.ui.res.svgResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.nps.common.SocketInteractiveKey
+import com.nps.model.InteractiveData
+import com.nps.socket.ClientSocket
 import java.io.File
 import javax.swing.plaf.IconUIResource
 
@@ -26,19 +29,21 @@ fun FileDirectoryOrListCompose(
         mutableStateOf(rootDirectory)
     }
 
-    val filesListState = remember {
-        derivedStateOf {
-            File(rootDirectoryState).listFiles()?.toMutableList()?.toMutableStateList() ?: mutableStateListOf()
-        }
+    var filesListState = remember {
+        mutableStateListOf<InteractiveData>()
     }
 
     DisposableEffect(key1 = rootDirectoryState) {
-        filesListState.value.clear()
-        filesListState.value.addAll(
-            File(rootDirectoryState).listFiles()?.toMutableList()?.toMutableStateList() ?: mutableStateListOf()
-        )
+        ClientSocket.sentMsg(SocketInteractiveKey.GetDirectory, rootDirectoryState, "")
         onDispose {
 
+        }
+    }
+
+    SideEffect {
+        ClientSocket.connect()
+        ClientSocket.directoryListCallback = {
+            filesListState = it.toMutableStateList()
         }
     }
 
@@ -73,17 +78,17 @@ fun FileDirectoryOrListCompose(
         LazyColumn(
             modifier = Modifier.fillMaxWidth()
         ) {
-            items(filesListState.value) { file ->
-                if (file?.isDirectory == true) {
+            items(filesListState) { file ->
+                if (file.isDirectory) {
                     FileDirectoryCompose(
-                        file = file,
+                        interactiveData = file,
                         directoryClick = {
-                            rootDirectoryState = file.absolutePath
+                            rootDirectoryState = file.filePath
                         }
                     )
                 } else {
                     FileCompose(
-                        file = file
+                        interactiveData = file
                     )
                 }
             }
@@ -93,7 +98,7 @@ fun FileDirectoryOrListCompose(
 
 @Composable
 private fun FileDirectoryCompose(
-    file: File,
+    interactiveData: InteractiveData,
     directoryClick: () -> Unit = {}
 ) {
     Row(
@@ -113,13 +118,13 @@ private fun FileDirectoryCompose(
             modifier = Modifier.size(30.dp)
         )
         Spacer(modifier = Modifier.width(8.dp))
-        Text(text = file.name)
+        Text(text = interactiveData.fileName)
     }
 }
 
 @Composable
 private fun FileCompose(
-    file: File,
+    interactiveData: InteractiveData,
     downloadClick: () -> Unit = {}
 ) {
     Row(
@@ -137,9 +142,9 @@ private fun FileCompose(
         )
         Spacer(modifier = Modifier.width(8.dp))
         Column {
-            Text(text = file.name)
+            Text(text = interactiveData.fileName)
             Text(
-                text = file.path,
+                text = interactiveData.filePath,
                 fontSize = 12.sp,
                 color = Color.Gray,
                 overflow = TextOverflow.Ellipsis,
