@@ -9,3 +9,10 @@ inline fun String.toInteractiveData(): InteractiveData? {
         null
     }
 }
+
+/**
+ * 获取字符串后缀
+ */
+fun String.suffixText(delimiter: String): String {
+    return this.substring(this.lastIndexOf(delimiter), this.length)
+}

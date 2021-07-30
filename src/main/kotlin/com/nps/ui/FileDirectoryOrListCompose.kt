@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.nps.common.Base64Common
 import com.nps.common.SocketInteractiveKey
+import com.nps.common.suffixText
 import com.nps.model.InteractiveData
 import com.nps.socket.ClientSocket
 import java.io.File
@@ -25,29 +26,22 @@ import javax.swing.plaf.IconUIResource
 
 @Composable
 fun FileDirectoryOrListCompose(
-    rootDirectory: String = "D:\\"
+    rootDirectory: String = "C:\\"
 ) {
 
     val filesListState = remember {
         mutableStateOf<List<InteractiveData>>(listOf())
     }
 
-    SideEffect {
+    LaunchedEffect(key1 = Unit) {
         ClientSocket.directoryListCallback = {
             filesListState.value = it
         }
-        ClientSocket.connect()
+        ClientSocket.connect(rootDirectory)
     }
 
     var rootDirectoryState by remember {
         mutableStateOf(rootDirectory)
-    }
-
-    DisposableEffect(key1 = rootDirectoryState) {
-        ClientSocket.sentMsg(SocketInteractiveKey.GetDirectory, rootDirectoryState, "")
-        onDispose {
-
-        }
     }
 
     Column(
@@ -86,12 +80,21 @@ fun FileDirectoryOrListCompose(
                     FileDirectoryCompose(
                         interactiveData = file,
                         directoryClick = {
-                            rootDirectoryState = Base64Common.decodeToString(file.filePath)
+                            rootDirectoryState = file.filePath
+                            ClientSocket.sentMsg(SocketInteractiveKey.GetDirectory, file.filePath, "")
                         }
                     )
                 } else {
                     FileCompose(
-                        interactiveData = file
+                        interactiveData = file,
+                        downloadClick = {
+                            file.fileName + file.filePath.subSequence(file.filePath.lastIndexOf("."), file.filePath.length)
+                            ClientSocket.sentMsg(
+                                SocketInteractiveKey.Download,
+                                file.filePath,
+                                "C:\\Users\\AOC\\Desktop\\${file.fileName}.${file.filePath.suffixText(".")}"
+                            )
+                        }
                     )
                 }
             }
@@ -121,7 +124,7 @@ private fun FileDirectoryCompose(
             modifier = Modifier.size(30.dp)
         )
         Spacer(modifier = Modifier.width(8.dp))
-        Text(text = Base64Common.decodeToString(interactiveData.fileName))
+        Text(text = interactiveData.fileName)
     }
 }
 
@@ -145,9 +148,9 @@ private fun FileCompose(
         )
         Spacer(modifier = Modifier.width(8.dp))
         Column {
-            Text(text = Base64Common.decodeToString(interactiveData.fileName))
+            Text(text = interactiveData.fileName)
             Text(
-                text = Base64Common.decodeToString(interactiveData.filePath),
+                text = interactiveData.filePath,
                 fontSize = 12.sp,
                 color = Color.Gray,
                 overflow = TextOverflow.Ellipsis,
@@ -155,9 +158,13 @@ private fun FileCompose(
             )
         }
         Spacer(modifier = Modifier.weight(1f))
-        Button(onClick = {
+        Button(
+            contentPadding = PaddingValues(0.dp),
+            modifier = Modifier.height(30.dp),
+            onClick = {
             downloadClick()
-        }) {
+        }
+        ) {
             Text(text = "下载")
         }
     }

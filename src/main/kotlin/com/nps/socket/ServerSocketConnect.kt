@@ -2,10 +2,7 @@ package com.nps.socket
 
 import com.nps.common.*
 import com.nps.model.InteractiveData
-import java.io.File
-import java.io.IOException
-import java.io.OutputStream
-import java.io.PrintWriter
+import java.io.*
 import java.net.ServerSocket
 import java.net.Socket
 import java.util.*
@@ -48,6 +45,21 @@ internal class DataProgressServerStream(
         when(interactiveData.key) {
             SocketInteractiveKey.GetDirectory ->
                 sentLocalDirectoryList(interactiveData.value, PrintWriter(bw, true))
+            SocketInteractiveKey.Download ->
+                sentFileStream(localPath = interactiveData.value, BufferedOutputStream(bw))
+        }
+    }
+
+    /**
+     * 发送文件给客户端
+     */
+    private fun sentFileStream(localPath: String, bos: BufferedOutputStream) {
+        FileInputStream(localPath).use { fis ->
+            var len : Int
+            while (fis.read().also { len = it } != -1) {
+                bos.write(len)
+            }
+            bos.flush()
         }
     }
 
@@ -70,13 +82,12 @@ internal class DataProgressServerStream(
             file.listFiles()?.map { f ->
                 InteractiveData(
                     key = SocketInteractiveKey.GetDirectory,
-                    fileName = Base64Common.encodeToString(f.name),
-                    filePath = Base64Common.encodeToString(f.absolutePath),
+                    fileName = f.name,
+                    filePath = f.absolutePath,
                     isDirectory = f.isDirectory
                 )
             }?.let { list: List<InteractiveData> ->
-                val toJson = GsonCommon.gson.toJson(list)
-                bw.println(Base64Common.encodeToString(toJson))
+                bw.println(GsonCommon.gson.toJson(list))
             }
         }
     }

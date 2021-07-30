@@ -3,9 +3,7 @@ package com.nps.socket
 import com.google.gson.reflect.TypeToken
 import com.nps.common.*
 import com.nps.model.InteractiveData
-import java.io.BufferedReader
-import java.io.InputStream
-import java.io.PrintWriter
+import java.io.*
 import java.net.Socket
 import kotlin.jvm.Throws
 
@@ -19,14 +17,14 @@ object ClientSocket {
     private var socket: Socket? = null
     private var printWriter: PrintWriter? = null
 
-    fun connect() {
+    fun connect(initPath: String) {
         if (socket != null && socket?.isClosed == false) return
         ThreadPoolCommon.scheduled.execute {
             try {
                 socket = Socket("127.0.0.1", 2000)
                 printWriter = PrintWriter(socket?.getOutputStream()!!, true)
                 AppLogCallbackCommon.logCallback(ServiceInfoLog.LogError, "连接成功")
-                sentMsg(SocketInteractiveKey.GetDirectory, "C:\\", "")
+                sentMsg(SocketInteractiveKey.GetDirectory, initPath, "")
             } catch (e: Exception) {
                 AppLogCallbackCommon.logCallback(ServiceInfoLog.LogError, "${e.message}")
             }
@@ -35,10 +33,10 @@ object ClientSocket {
 
     fun sentMsg(key: String, filePath: String, savePath: String) {
         printWriter?.println(GsonCommon.gson.toJson(InteractiveData(key = key, value = filePath)))
-        inputStreamProgress(key)
+        inputStreamProgress(key, savePath)
     }
 
-    private fun inputStreamProgress(key: String) {
+    private fun inputStreamProgress(key: String, savePath: String) {
         println(ThreadPoolCommon.scheduled.activeCount)
         ThreadPoolCommon.scheduled.execute {
             try {
@@ -46,6 +44,8 @@ object ClientSocket {
                     when (key) {
                         SocketInteractiveKey.GetDirectory ->
                             getDirectoryListStream(BufferedReader(iis.bufferedReader()))
+                        SocketInteractiveKey.Download ->
+                            saveFile(savePath, BufferedInputStream(iis))
                     }
                 }
             } catch (e: Exception) {
@@ -56,31 +56,26 @@ object ClientSocket {
     }
 
     @Throws
-    private fun saveFile(path: String) {
-        /*ThreadPoolCommon.scheduled.execute {
-            val buf = socket?.getInputStream().buffered()
-            val bos = FileOutputStream(path*//*"C:\\Users\\AOC\\Desktop\\release.apk"*//*).buffered()
-            var len: Int
-            while (buf.read().also { len = it } != -1) {
-                bos.write(len)
-            }
-            bos.flush()
-        }*/
+    private fun saveFile(savePath: String, buf: BufferedInputStream) {
+        val bos = FileOutputStream(savePath).buffered()
+        var len: Int
+        while (buf.read().also { len = it } != -1) {
+            bos.write(len)
+        }
+        bos.flush()
+        bos.close()
     }
 
     @Throws
     private fun getDirectoryListStream(iis: BufferedReader) {
-        var json: String?
+        var json: String
         while (iis.readLine().also { json = it } != null) {
-            json?.let {
-                val s = Base64Common.decodeToString(it)
-                println(s)
-                if (GsonCommon.isJsonArr(s)) {
-                    GsonCommon.gson.fromJson<MutableList<InteractiveData>>(
-                        s, object : TypeToken<MutableList<InteractiveData>>() {}.type
-                    )?.let { itds: MutableList<InteractiveData> ->
-                        directoryListCallback(itds)
-                    }
+            println(json)
+            if (GsonCommon.isJsonArr(json)) {
+                GsonCommon.gson.fromJson<MutableList<InteractiveData>>(
+                    json, object : TypeToken<MutableList<InteractiveData>>() {}.type
+                )?.let { itds: MutableList<InteractiveData> ->
+                    directoryListCallback(itds)
                 }
             }
         }
