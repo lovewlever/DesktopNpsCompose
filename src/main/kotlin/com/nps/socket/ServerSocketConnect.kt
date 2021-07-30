@@ -8,6 +8,7 @@ import java.io.OutputStream
 import java.io.PrintWriter
 import java.net.ServerSocket
 import java.net.Socket
+import java.util.*
 
 class ServerSocketConnect {
     protected var serverSocket: ServerSocket? = null
@@ -69,8 +70,8 @@ internal class DataProgressServerStream(
             file.listFiles()?.map { f ->
                 InteractiveData(
                     key = SocketInteractiveKey.GetDirectory,
-                    fileName = f.name,
-                    filePath = f.absolutePath,
+                    fileName = Base64.getEncoder().encodeToString(f.name.toByteArray()),
+                    filePath = Base64.getEncoder().encodeToString(f.absolutePath.toByteArray()),
                     isDirectory = f.isDirectory
                 )
             }?.let { list: List<InteractiveData> ->

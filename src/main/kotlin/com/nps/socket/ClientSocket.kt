@@ -26,8 +26,7 @@ object ClientSocket {
                 socket = Socket("127.0.0.1", 2000)
                 printWriter = PrintWriter(socket?.getOutputStream()!!, true)
                 AppLogCallbackCommon.logCallback(ServiceInfoLog.LogError, "连接成功")
-                sentMsg(SocketInteractiveKey.GetDirectory, "C:\\", "")
-                inputStreamProgress(SocketInteractiveKey.GetDirectory)
+                sentMsg(SocketInteractiveKey.GetDirectory, "C:\\Windows", "")
             } catch (e: Exception) {
                 AppLogCallbackCommon.logCallback(ServiceInfoLog.LogError, "${e.message}")
             }
@@ -36,19 +35,23 @@ object ClientSocket {
 
     fun sentMsg(key: String, filePath: String, savePath: String) {
         printWriter?.println(GsonCommon.gson.toJson(InteractiveData(key = key, value = filePath)))
+        inputStreamProgress(key)
     }
 
     private fun inputStreamProgress(key: String) {
-        try {
-            socket?.getInputStream()?.let { iis: InputStream ->
-                when (key) {
-                    SocketInteractiveKey.GetDirectory ->
-                        getDirectoryListStream(iis.bufferedReader())
+        println(ThreadPoolCommon.scheduled.activeCount)
+        ThreadPoolCommon.scheduled.execute {
+            try {
+                socket?.getInputStream()?.let { iis: InputStream ->
+                    when (key) {
+                        SocketInteractiveKey.GetDirectory ->
+                            getDirectoryListStream(BufferedReader(iis.bufferedReader()))
+                    }
                 }
+            } catch (e: Exception) {
+                AppLogCallbackCommon.logCallback(ServiceInfoLog.LogError, "${e.message}")
+                e.printStackTrace()
             }
-        } catch (e: Exception) {
-            AppLogCallbackCommon.logCallback(ServiceInfoLog.LogError, "${e.message}")
-            e.printStackTrace()
         }
     }
 
@@ -69,9 +72,11 @@ object ClientSocket {
     private fun getDirectoryListStream(iis: BufferedReader) {
         var json: String?
         while (iis.readLine().also { json = it } != null) {
+            println(json)
             if (GsonCommon.isJsonArr(json)) {
                 GsonCommon.gson.fromJson<MutableList<InteractiveData>>(
-                    json, object :TypeToken<MutableList<InteractiveData>>(){}.type)?.let { itds: MutableList<InteractiveData> ->
+                    json, object : TypeToken<MutableList<InteractiveData>>() {}.type
+                )?.let { itds: MutableList<InteractiveData> ->
                     directoryListCallback(itds)
                 }
             }
