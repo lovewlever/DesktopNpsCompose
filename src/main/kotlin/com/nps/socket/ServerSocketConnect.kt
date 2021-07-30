@@ -70,12 +70,13 @@ internal class DataProgressServerStream(
             file.listFiles()?.map { f ->
                 InteractiveData(
                     key = SocketInteractiveKey.GetDirectory,
-                    fileName = Base64.getEncoder().encodeToString(f.name.toByteArray()),
-                    filePath = Base64.getEncoder().encodeToString(f.absolutePath.toByteArray()),
+                    fileName = Base64Common.encodeToString(f.name),
+                    filePath = Base64Common.encodeToString(f.absolutePath),
                     isDirectory = f.isDirectory
                 )
             }?.let { list: List<InteractiveData> ->
-                bw.println(GsonCommon.gson.toJson(list))
+                val toJson = GsonCommon.gson.toJson(list)
+                bw.println(Base64Common.encodeToString(toJson))
             }
         }
     }

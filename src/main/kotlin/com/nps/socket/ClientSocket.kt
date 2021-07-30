@@ -26,7 +26,7 @@ object ClientSocket {
                 socket = Socket("127.0.0.1", 2000)
                 printWriter = PrintWriter(socket?.getOutputStream()!!, true)
                 AppLogCallbackCommon.logCallback(ServiceInfoLog.LogError, "连接成功")
-                sentMsg(SocketInteractiveKey.GetDirectory, "C:\\Windows", "")
+                sentMsg(SocketInteractiveKey.GetDirectory, "C:\\", "")
             } catch (e: Exception) {
                 AppLogCallbackCommon.logCallback(ServiceInfoLog.LogError, "${e.message}")
             }
@@ -72,12 +72,15 @@ object ClientSocket {
     private fun getDirectoryListStream(iis: BufferedReader) {
         var json: String?
         while (iis.readLine().also { json = it } != null) {
-            println(json)
-            if (GsonCommon.isJsonArr(json)) {
-                GsonCommon.gson.fromJson<MutableList<InteractiveData>>(
-                    json, object : TypeToken<MutableList<InteractiveData>>() {}.type
-                )?.let { itds: MutableList<InteractiveData> ->
-                    directoryListCallback(itds)
+            json?.let {
+                val s = Base64Common.decodeToString(it)
+                println(s)
+                if (GsonCommon.isJsonArr(s)) {
+                    GsonCommon.gson.fromJson<MutableList<InteractiveData>>(
+                        s, object : TypeToken<MutableList<InteractiveData>>() {}.type
+                    )?.let { itds: MutableList<InteractiveData> ->
+                        directoryListCallback(itds)
+                    }
                 }
             }
         }

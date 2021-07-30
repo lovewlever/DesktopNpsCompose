@@ -15,10 +15,12 @@ import androidx.compose.ui.res.svgResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.nps.common.Base64Common
 import com.nps.common.SocketInteractiveKey
 import com.nps.model.InteractiveData
 import com.nps.socket.ClientSocket
 import java.io.File
+import java.util.*
 import javax.swing.plaf.IconUIResource
 
 @Composable
@@ -84,7 +86,7 @@ fun FileDirectoryOrListCompose(
                     FileDirectoryCompose(
                         interactiveData = file,
                         directoryClick = {
-                            rootDirectoryState = file.filePath
+                            rootDirectoryState = Base64Common.decodeToString(file.filePath)
                         }
                     )
                 } else {
@@ -119,7 +121,7 @@ private fun FileDirectoryCompose(
             modifier = Modifier.size(30.dp)
         )
         Spacer(modifier = Modifier.width(8.dp))
-        Text(text = interactiveData.fileName)
+        Text(text = Base64Common.decodeToString(interactiveData.fileName))
     }
 }
 
@@ -143,9 +145,9 @@ private fun FileCompose(
         )
         Spacer(modifier = Modifier.width(8.dp))
         Column {
-            Text(text = interactiveData.fileName)
+            Text(text = Base64Common.decodeToString(interactiveData.fileName))
             Text(
-                text = interactiveData.filePath,
+                text = Base64Common.decodeToString(interactiveData.filePath),
                 fontSize = 12.sp,
                 color = Color.Gray,
                 overflow = TextOverflow.Ellipsis,
