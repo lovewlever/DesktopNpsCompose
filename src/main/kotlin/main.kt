@@ -81,10 +81,6 @@ fun main() = Window(
                         else -> {
                         }
                     }
-
-                    ServicePageCompose(
-                        modifier = Modifier.fillMaxSize()
-                    )
                 }
             }
         }

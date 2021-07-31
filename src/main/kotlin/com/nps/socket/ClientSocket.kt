@@ -46,7 +46,7 @@ object ClientSocket {
         }
     }
 
-    fun connect(initPath: String, ip: String, port: Int) {
+    private fun connect(initPath: String, ip: String, port: Int) {
         if (socket != null && socket?.isClosed == false) return
         ThreadPoolCommon.scheduled.execute {
             try {
