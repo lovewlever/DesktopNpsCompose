@@ -9,4 +9,6 @@ object CallbackCommon {
     var directoryListCallback: (MutableList<SocketFileData>) -> Unit = {}
     // 文件下载进度
     var fileDownloadScheduleCallback: (available: Long, curSchedule: Long) -> Unit = { _, _ -> }
+    // exec
+    var execProcessCallback: (AppLogType, String) -> Unit = { _, _ -> }
 }

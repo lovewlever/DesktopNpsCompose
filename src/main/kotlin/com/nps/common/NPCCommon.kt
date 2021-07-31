@@ -1,10 +1,11 @@
 package com.nps.common
 
+import java.io.File
 import java.io.IOException
 
 object NPCCommon {
 
-    var execProcessCallback: (AppLogType, String) -> Unit = { _, _ ->}
+
 
     /**
      * 启动Npc
@@ -14,15 +15,15 @@ object NPCCommon {
         ThreadPoolCommon.scheduled.execute {
             try {
                 val property = System.getProperty("user.dir")
-                Runtime.getRuntime().exec("${property}\\src\\main\\resources\\npc\\npc.exe $param")
+                Runtime.getRuntime().exec("${property}${File.separator}src${File.separator}main${File.separator}resources${File.separator}npc${File.separator}npc.exe $param")
                     .inputStream.bufferedReader().use { br ->
                         var str: String
                         while (br.readLine().also { str = it } != null) {
-                            execProcessCallback(AppLogType.LogInfo, str)
+                            CallbackCommon.execProcessCallback(AppLogType.LogInfo, str)
                         }
                     }
             } catch (e: IOException) {
-                execProcessCallback(AppLogType.LogError, "${e.message}")
+                CallbackCommon.execProcessCallback(AppLogType.LogError, "${e.message}")
                 e.printStackTrace()
             }
         }

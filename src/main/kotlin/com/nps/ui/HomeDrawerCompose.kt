@@ -8,9 +8,11 @@ import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.nps.common.AppPageNav
+import com.nps.common.*
+import kotlinx.coroutines.launch
 
 @Composable
 fun HomeDrawerCompose(
@@ -31,11 +33,20 @@ fun HomeDrawerCompose(
         mutableStateOf(false)
     }
 
+    val coroutineScope = rememberCoroutineScope()
+
     // 客户端设置
     ClientInputAddressAndPortDialogCompose(
         showDialogState = clientDialogConfigState,
         confirmClick = {
-            openPageClick(AppPageNav.TypeClient)
+            coroutineScope.launch {
+                AppConfigCommon.getConfigData()?.clientConfig?.npcParam?.let {
+                    //NPCCommon.startNpcClient(it)
+                    openPageClick(AppPageNav.TypeClient)
+                } ?: let {
+                    CallbackCommon.logCallback(AppLogType.LogError, "未设置NpcParam")
+                }
+            }
         }
     )
 

@@ -83,6 +83,9 @@ fun main() = Window(
                     }
                 }
             }
+            /*ServicePageCompose(
+                modifier = Modifier.fillMaxSize()
+            )*/
         }
     }
 }

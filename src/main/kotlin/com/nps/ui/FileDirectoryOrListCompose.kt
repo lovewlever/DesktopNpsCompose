@@ -16,10 +16,7 @@ import androidx.compose.ui.res.svgResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.nps.common.AppConfigCommon
-import com.nps.common.CallbackCommon
-import com.nps.common.SocketInteractiveKey
-import com.nps.common.suffixText
+import com.nps.common.*
 import com.nps.model.AppConfigData
 import com.nps.model.SocketFileData
 import com.nps.model.SocketInteractiveData
