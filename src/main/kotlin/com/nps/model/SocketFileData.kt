@@ -1,9 +1,8 @@
 package com.nps.model
 
-class InteractiveData(
-    var key: Int = 0,
-    var value: String = "",
+class SocketFileData(
     var fileName: String = "",
     var filePath: String = "",
+    var fileSize: Long = 0L,
     var isDirectory: Boolean = false
 )

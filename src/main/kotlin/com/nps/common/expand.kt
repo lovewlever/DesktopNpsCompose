@@ -1,10 +1,11 @@
 package com.nps.common
 
-import com.nps.model.InteractiveData
+import com.google.gson.reflect.TypeToken
+import com.nps.model.SocketInteractiveData
 
-inline fun String.toInteractiveData(): InteractiveData? {
+inline fun String.toInteractiveData(): SocketInteractiveData<*>? {
     return if (GsonCommon.isJsonObj(this)) {
-        GsonCommon.gson.fromJson(this, InteractiveData::class.java)
+        GsonCommon.gson.fromJson(this, object :TypeToken<SocketInteractiveData<*>>(){}.type)
     } else {
         null
     }

@@ -10,5 +10,6 @@ object SocketStreamType {
 object SocketInteractiveKey {
     const val CloseSocket = 3
     const val GetDirectory = 2
-    const val Download = 1
+    const val DownloadFile = 1
+    //const val GetDownloadFileSize = 4 // 获取要下载文件的大小
 }

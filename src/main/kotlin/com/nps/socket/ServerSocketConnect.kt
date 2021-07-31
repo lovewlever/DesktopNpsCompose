@@ -1,11 +1,11 @@
 package com.nps.socket
 
 import com.nps.common.*
-import com.nps.model.InteractiveData
+import com.nps.model.SocketFileData
+import com.nps.model.SocketInteractiveData
 import java.io.*
 import java.net.ServerSocket
 import java.net.Socket
-import java.util.*
 
 class ServerSocketConnect {
     protected var serverSocket: ServerSocket? = null
@@ -15,14 +15,14 @@ class ServerSocketConnect {
         ThreadPoolCommon.scheduled.execute {
             try {
                 serverSocket = ServerSocket(8025)
-                AppLogCallbackCommon.logCallback(ServiceInfoLog.LogInfo, "启动成功，等待连接")
+                CallbackCommon.logCallback(ServiceInfoLog.LogInfo, "启动成功，等待连接")
                 while (true) {
                     val accept = serverSocket?.accept()
-                    AppLogCallbackCommon.logCallback(ServiceInfoLog.LogInfo, "客户端连接：${accept?.localAddress?.address}")
+                    CallbackCommon.logCallback(ServiceInfoLog.LogInfo, "客户端连接：${accept?.localAddress?.address}")
                     accept?.let { DataProgressServerStream(accept).start() }
                 }
             } catch (e: Exception) {
-                AppLogCallbackCommon.logCallback(ServiceInfoLog.LogError, "${e.message}")
+                CallbackCommon.logCallback(ServiceInfoLog.LogError, "${e.message}")
                 e.printStackTrace()
             }
         }
@@ -41,11 +41,11 @@ internal class DataProgressServerStream(
     val socket: Socket
 ): ServerStream(socket) {
 
-    override fun interactiveProgress(interactiveData: InteractiveData, bw: OutputStream) {
+    override fun interactiveProgress(interactiveData: SocketInteractiveData<*>, bw: OutputStream) {
         when(interactiveData.key) {
             SocketInteractiveKey.GetDirectory ->
                 sentLocalDirectoryList(interactiveData.value, bw.buffered())
-            SocketInteractiveKey.Download ->
+            SocketInteractiveKey.DownloadFile ->
                 sentFileStream(localPath = interactiveData.value, BufferedOutputStream(bw))
         }
     }
@@ -76,27 +76,36 @@ internal class DataProgressServerStream(
             bw.write(SocketStreamType.CharacterStream.toByteArray())
             bw.write(
                 GsonCommon.gson.toJson(
-                    mutableListOf(InteractiveData(
+                    SocketInteractiveData(
                         key = SocketInteractiveKey.GetDirectory,
-                        fileName = file.name,
-                        filePath = file.absolutePath
-                    ))
+                        data = mutableListOf(SocketFileData(
+                            fileName = file.name,
+                            filePath = file.absolutePath,
+                            fileSize = if (file.isFile) file.length() else 0L,
+                            isDirectory = false
+                        ))
+                    )
+
                 ).encodeToByteArray()
             )
             bw.write(SocketStreamType.StreamDone.toByteArray())
             bw.flush()
         } else if (file.isDirectory) {
             file.listFiles()?.map { f ->
-                InteractiveData(
-                    key = SocketInteractiveKey.GetDirectory,
+                SocketFileData(
                     fileName = f.name,
                     filePath = f.absolutePath,
+                    fileSize = if (f.isFile) f.length() else 0L,
                     isDirectory = f.isDirectory
                 )
-            }?.let { list: List<InteractiveData> ->
+            }?.let { list: List<SocketFileData> ->
                 bw.write(SocketStreamType.CharacterStream.toByteArray())
                 bw.write(
-                    GsonCommon.gson.toJson(list).encodeToByteArray()
+                    GsonCommon.gson.toJson(
+                        SocketInteractiveData(
+                        key = SocketInteractiveKey.GetDirectory,
+                        data = list
+                    )).encodeToByteArray()
                 )
                 bw.write(SocketStreamType.StreamDone.toByteArray())
                 bw.flush()
@@ -116,7 +125,7 @@ abstract class ServerStream(
         try {
             var str: String
             while (br.readLine().apply { str = this } != null) {
-                AppLogCallbackCommon.logCallback(ServiceInfoLog.LogInfo, "收到消息：${str}")
+                CallbackCommon.logCallback(ServiceInfoLog.LogInfo, "收到消息：${str}")
                 val tId = str.toInteractiveData() ?: break
                 if (tId.key == SocketInteractiveKey.CloseSocket) {
                     break
@@ -125,24 +134,24 @@ abstract class ServerStream(
                 }
             }
         } catch (e: IOException) {
-            AppLogCallbackCommon.logCallback(ServiceInfoLog.LogError, "${e.message}")
+            CallbackCommon.logCallback(ServiceInfoLog.LogError, "${e.message}")
             e.printStackTrace()
         } finally {
             try {
                 br.close()
             } catch (e: IOException) {
-                AppLogCallbackCommon.logCallback(ServiceInfoLog.LogError, "${e.message}")
+                CallbackCommon.logCallback(ServiceInfoLog.LogError, "${e.message}")
                 e.printStackTrace()
             }
             try {
                 bw.close()
             } catch (e: IOException) {
-                AppLogCallbackCommon.logCallback(ServiceInfoLog.LogError, "${e.message}")
+                CallbackCommon.logCallback(ServiceInfoLog.LogError, "${e.message}")
                 e.printStackTrace()
             }
         }
     }
 
 
-    abstract fun interactiveProgress(interactiveData: InteractiveData, bw: OutputStream)
+    abstract fun interactiveProgress(interactiveData: SocketInteractiveData<*>, bw: OutputStream)
 }
