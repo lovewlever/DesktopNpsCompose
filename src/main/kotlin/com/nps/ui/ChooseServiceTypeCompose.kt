@@ -16,10 +16,11 @@ import com.nps.common.ServiceType
  */
 @Composable
 fun ChooseServiceTypeCompose(
+    modifier: Modifier = Modifier,
     typeClick: (ServiceType) -> Unit = {}
 ) {
     Box(
-        modifier = Modifier.fillMaxSize(),
+        modifier = modifier,
         contentAlignment = Alignment.Center
     ) {
         Row{

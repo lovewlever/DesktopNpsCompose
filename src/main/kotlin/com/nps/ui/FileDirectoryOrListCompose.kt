@@ -26,6 +26,7 @@ import javax.swing.plaf.IconUIResource
 
 @Composable
 fun FileDirectoryOrListCompose(
+    modifier: Modifier = Modifier,
     rootDirectory: String = "C:\\"
 ) {
 
@@ -45,7 +46,7 @@ fun FileDirectoryOrListCompose(
     }
 
     Column(
-        modifier = Modifier.fillMaxSize()
+        modifier = modifier
     ) {
         Surface {
             Row(

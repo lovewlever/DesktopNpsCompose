@@ -19,7 +19,9 @@ import com.nps.socket.ClientSocket
 import com.nps.socket.ServiceSocket
 
 @Composable
-fun ServicePageCompose() {
+fun ServicePageCompose(
+    modifier: Modifier = Modifier
+) {
 
     val infoListState = remember {
         mutableStateListOf<Pair<ServiceInfoLog, String>>(ServiceInfoLog.LogInfo to "")
@@ -32,7 +34,7 @@ fun ServicePageCompose() {
 
     }
     Surface(
-        modifier = Modifier.fillMaxSize()
+        modifier = modifier
     ) {
         Column(
             modifier = Modifier.fillMaxSize()

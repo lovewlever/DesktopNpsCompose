@@ -20,7 +20,7 @@ object ClientSocket {
         if (socket != null && socket?.isClosed == false) return
         ThreadPoolCommon.scheduled.execute {
             try {
-                socket = Socket("127.0.0.1", 2000)
+                socket = Socket("127.0.0.1", 8025)
                 printWriter = PrintWriter(socket?.getOutputStream()!!, true)
                 AppLogCallbackCommon.logCallback(ServiceInfoLog.LogError, "连接成功")
                 sentMsg(SocketInteractiveKey.GetDirectory, initPath, "")
@@ -32,18 +32,15 @@ object ClientSocket {
 
     fun sentMsg(key: String, filePath: String, savePath: String) {
         printWriter?.println(GsonCommon.gson.toJson(InteractiveData(key = key, value = filePath)))
-        inputStreamProgress(key, savePath)
+        inputStreamProgress(savePath)
     }
 
-    private fun inputStreamProgress(key: String, savePath: String) {
+    private fun inputStreamProgress(savePath: String) {
         println(ThreadPoolCommon.scheduled.activeCount)
         ThreadPoolCommon.scheduled.execute {
             try {
                 socket?.getInputStream()?.buffered()?.let { bis: BufferedInputStream ->
-                    var len: Int
-                    while (bis.read().also { len = it } != -1) {
-
-                    }
+                    progressStream(bis, savePath)
                 }
             } catch (e: Exception) {
                 AppLogCallbackCommon.logCallback(ServiceInfoLog.LogError, "${e.message}")
@@ -52,34 +49,92 @@ object ClientSocket {
         }
     }
 
-
-    @Throws
-    private fun saveFile(savePath: String, buf: BufferedInputStream) {
-        val bos = FileOutputStream(savePath).buffered()
-        var len: Int
-        while (buf.read().also { len = it } != -1) {
-            bos.write(len)
+    private fun progressStream(bis: BufferedInputStream, savePath: String) {
+        val byteArrayOutputStream by lazy { ByteArrayOutputStream() }
+        val bos: BufferedOutputStream? by lazy {
+            if (savePath != "")
+                FileOutputStream(savePath).buffered()
+            else
+                null
         }
-        bos.flush()
-        bos.close()
+        try {
+            var startFlag = ""
+            var len: Int
+            var byteArray = ByteArray(8192)
+            while (bis.read(byteArray).also { len = it } != -1) {
+                val size = byteArray.size
+                val sFlag = byteArray.filterIndexed { index, byte -> index < 4 }.toByteArray().decodeToString()
+                val eFlag =
+                    byteArray.copyOfRange(0, len).filterIndexed { index, byte -> index > len - 5 }.toByteArray()
+                        .decodeToString()
+
+                // 开始标识符
+                when (sFlag) {
+                    SocketInteractiveKey.GetDirectory, SocketInteractiveKey.Download -> {
+                        AppLogCallbackCommon.logCallback(ServiceInfoLog.LogInfo, "标识符：${startFlag}")
+                        byteArray = byteArray.copyOfRange(4, size)
+                        len -= 4
+                        startFlag = sFlag
+                    }
+                }
+                if (eFlag == SocketInteractiveKey.StreamDone) {
+                    len -= 4
+                }
+
+                when (startFlag) {
+                    SocketInteractiveKey.GetDirectory -> {
+                        byteArrayOutputStream.write(byteArray, 0, len)
+                    }
+                    SocketInteractiveKey.Download -> {
+                        bos?.write(byteArray, 0, len)
+                    }
+                }
+
+                if (eFlag == SocketInteractiveKey.StreamDone) {
+                    AppLogCallbackCommon.logCallback(ServiceInfoLog.LogInfo, "标识符：${eFlag}")
+                    break
+                }
+            }
+
+            when (startFlag) {
+                SocketInteractiveKey.GetDirectory -> {
+                    progressJson(byteArrayOutputStream)
+                }
+            }
+
+        } catch (e: Exception) {
+            AppLogCallbackCommon.logCallback(ServiceInfoLog.LogError, "${e.message}")
+            e.printStackTrace()
+        } finally {
+            try {
+                byteArrayOutputStream.close()
+            } catch (e: Exception) {
+                AppLogCallbackCommon.logCallback(ServiceInfoLog.LogError, "${e.message}")
+                e.printStackTrace()
+            }
+            try {
+                bos?.close()
+            } catch (e: Exception) {
+                AppLogCallbackCommon.logCallback(ServiceInfoLog.LogError, "${e.message}")
+                e.printStackTrace()
+            }
+        }
     }
 
     @Throws
-    private fun getDirectoryListStream(iis: BufferedReader) {
-        var json: String
-        while (iis.readLine().also { json = it } != null) {
-            println(json)
-            if (GsonCommon.isJsonArr(json)) {
-                GsonCommon.gson.fromJson<MutableList<InteractiveData>>(
-                    json, object : TypeToken<MutableList<InteractiveData>>() {}.type
-                )?.let { itds: MutableList<InteractiveData> ->
-                    directoryListCallback(itds)
-                }
+    private fun progressJson(baos: ByteArrayOutputStream) {
+        val json = baos.toByteArray().decodeToString()
+        if (GsonCommon.isJsonArr(json)) {
+            GsonCommon.gson.fromJson<MutableList<InteractiveData>>(
+                json, object : TypeToken<MutableList<InteractiveData>>() {}.type
+            )?.let { itds: MutableList<InteractiveData> ->
+                directoryListCallback(itds)
             }
         }
     }
 }
 
 fun main() {
-    println(0xfe)
+    val arr = "0xfb".toByteArray()
+    println()
 }

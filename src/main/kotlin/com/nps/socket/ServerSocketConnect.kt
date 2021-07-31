@@ -56,11 +56,12 @@ internal class DataProgressServerStream(
     private fun sentFileStream(localPath: String, bos: BufferedOutputStream) {
         FileInputStream(localPath).use { fis ->
             var len : Int
+            bos.write(SocketInteractiveKey.Download.toByteArray())
             while (fis.read().also { len = it } != -1) {
                 bos.write(len)
             }
+            bos.write(SocketInteractiveKey.StreamDone.toByteArray())
             bos.flush()
-            fis.close()
             //socket.shutdownOutput()
         }
     }
@@ -71,6 +72,7 @@ internal class DataProgressServerStream(
     private fun sentLocalDirectoryList(localPath: String, bw: BufferedOutputStream) {
         val file = File(localPath)
         if (file.isFile) {
+            bw.write(SocketInteractiveKey.GetDirectory.toByteArray())
             bw.write(
                 GsonCommon.gson.toJson(
                     mutableListOf(InteractiveData(
@@ -80,6 +82,8 @@ internal class DataProgressServerStream(
                     ))
                 ).encodeToByteArray()
             )
+            bw.write(SocketInteractiveKey.StreamDone.toByteArray())
+            bw.flush()
         } else if (file.isDirectory) {
             file.listFiles()?.map { f ->
                 InteractiveData(
@@ -89,9 +93,12 @@ internal class DataProgressServerStream(
                     isDirectory = f.isDirectory
                 )
             }?.let { list: List<InteractiveData> ->
+                bw.write(SocketInteractiveKey.GetDirectory.toByteArray())
                 bw.write(
                     GsonCommon.gson.toJson(list).encodeToByteArray()
                 )
+                bw.write(SocketInteractiveKey.StreamDone.toByteArray())
+                bw.flush()
             }
         }
     }
