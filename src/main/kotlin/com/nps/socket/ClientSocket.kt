@@ -23,10 +23,10 @@ object ClientSocket {
             try {
                 socket = Socket("127.0.0.1", 8025)
                 printWriter = PrintWriter(socket?.getOutputStream()!!, true)
-                CallbackCommon.logCallback(ServiceInfoLog.LogError, "连接成功")
+                CallbackCommon.logCallback(AppLogType.LogError, "连接成功")
                 sentMsg(SocketInteractiveKey.GetDirectory, initPath, "")
             } catch (e: Exception) {
-                CallbackCommon.logCallback(ServiceInfoLog.LogError, "${e.message}")
+                CallbackCommon.logCallback(AppLogType.LogError, "${e.message}")
             }
         }
     }
@@ -44,7 +44,7 @@ object ClientSocket {
                     progressStream(bis, savePath, fileSize)
                 }
             } catch (e: Exception) {
-                CallbackCommon.logCallback(ServiceInfoLog.LogError, "${e.message}")
+                CallbackCommon.logCallback(AppLogType.LogError, "${e.message}")
                 e.printStackTrace()
             }
         }
@@ -78,7 +78,7 @@ object ClientSocket {
                 // 开始标识符
                 when (sFlag) {
                     SocketStreamType.CharacterStream, SocketStreamType.ByteStream -> {
-                        CallbackCommon.logCallback(ServiceInfoLog.LogInfo, "标识符：${startFlag}")
+                        CallbackCommon.logCallback(AppLogType.LogInfo, "标识符：${startFlag}")
                         byteArray = byteArray.copyOfRange(4, size)
                         len -= 4
                         startFlag = sFlag
@@ -96,7 +96,7 @@ object ClientSocket {
                     }
                 }
                 if (eFlag == SocketStreamType.StreamDone) {
-                    CallbackCommon.logCallback(ServiceInfoLog.LogInfo, "标识符：${eFlag}")
+                    CallbackCommon.logCallback(AppLogType.LogInfo, "标识符：${eFlag}")
                     break
                 }
             }
@@ -108,19 +108,19 @@ object ClientSocket {
             }
 
         } catch (e: Exception) {
-            CallbackCommon.logCallback(ServiceInfoLog.LogError, "${e.message}")
+            CallbackCommon.logCallback(AppLogType.LogError, "${e.message}")
             e.printStackTrace()
         } finally {
             try {
                 byteArrayOutputStream.close()
             } catch (e: Exception) {
-                CallbackCommon.logCallback(ServiceInfoLog.LogError, "${e.message}")
+                CallbackCommon.logCallback(AppLogType.LogError, "${e.message}")
                 e.printStackTrace()
             }
             try {
                 bos?.close()
             } catch (e: Exception) {
-                CallbackCommon.logCallback(ServiceInfoLog.LogError, "${e.message}")
+                CallbackCommon.logCallback(AppLogType.LogError, "${e.message}")
                 e.printStackTrace()
             }
         }

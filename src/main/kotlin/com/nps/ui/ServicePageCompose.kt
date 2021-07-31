@@ -15,7 +15,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.nps.common.CallbackCommon
-import com.nps.common.ServiceInfoLog
+import com.nps.common.AppLogType
 import com.nps.socket.ServiceSocket
 
 @Composable
@@ -24,7 +24,7 @@ fun ServicePageCompose(
 ) {
 
     val infoListState = remember {
-        mutableStateListOf<Pair<ServiceInfoLog, String>>(ServiceInfoLog.LogInfo to "")
+        mutableStateListOf<Pair<AppLogType, String>>(AppLogType.LogInfo to "")
     }
 
     SideEffect {
@@ -47,7 +47,7 @@ fun ServicePageCompose(
             modifier = Modifier.fillMaxWidth(),
             contentPadding = PaddingValues(8.dp)
         ) {
-            items(infoListState) { item: Pair<ServiceInfoLog, String> ->
+            items(infoListState) { item: Pair<AppLogType, String> ->
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -62,7 +62,7 @@ fun ServicePageCompose(
                         modifier = Modifier,
                         text = item.second,
                         fontSize = 13.sp,
-                        color = if (item.first is ServiceInfoLog.LogError) Color.Red else Color.Black
+                        color = if (item.first is AppLogType.LogError) Color.Red else Color.Black
                     )
                     Spacer(
                         modifier = Modifier

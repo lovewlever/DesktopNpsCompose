@@ -4,7 +4,7 @@ import java.io.IOException
 
 object NPCCommon {
 
-    var execProcessCallback: (ServiceInfoLog,String) -> Unit = { _,_ ->}
+    var execProcessCallback: (AppLogType, String) -> Unit = { _, _ ->}
 
     /**
      * 启动Npc
@@ -18,11 +18,11 @@ object NPCCommon {
                     .inputStream.bufferedReader().use { br ->
                         var str: String
                         while (br.readLine().also { str = it } != null) {
-                            execProcessCallback(ServiceInfoLog.LogInfo, str)
+                            execProcessCallback(AppLogType.LogInfo, str)
                         }
                     }
             } catch (e: IOException) {
-                execProcessCallback(ServiceInfoLog.LogError, "${e.message}")
+                execProcessCallback(AppLogType.LogError, "${e.message}")
                 e.printStackTrace()
             }
         }

@@ -15,14 +15,14 @@ class ServerSocketConnect {
         ThreadPoolCommon.scheduled.execute {
             try {
                 serverSocket = ServerSocket(8025)
-                CallbackCommon.logCallback(ServiceInfoLog.LogInfo, "启动成功，等待连接")
+                CallbackCommon.logCallback(AppLogType.LogInfo, "启动成功，等待连接")
                 while (true) {
                     val accept = serverSocket?.accept()
-                    CallbackCommon.logCallback(ServiceInfoLog.LogInfo, "客户端连接：${accept?.localAddress?.address}")
+                    CallbackCommon.logCallback(AppLogType.LogInfo, "客户端连接：${accept?.localAddress?.address}")
                     accept?.let { DataProgressServerStream(accept).start() }
                 }
             } catch (e: Exception) {
-                CallbackCommon.logCallback(ServiceInfoLog.LogError, "${e.message}")
+                CallbackCommon.logCallback(AppLogType.LogError, "${e.message}")
                 e.printStackTrace()
             }
         }
@@ -125,7 +125,7 @@ abstract class ServerStream(
         try {
             var str: String
             while (br.readLine().apply { str = this } != null) {
-                CallbackCommon.logCallback(ServiceInfoLog.LogInfo, "收到消息：${str}")
+                CallbackCommon.logCallback(AppLogType.LogInfo, "收到消息：${str}")
                 val tId = str.toInteractiveData() ?: break
                 if (tId.key == SocketInteractiveKey.CloseSocket) {
                     break
@@ -134,19 +134,19 @@ abstract class ServerStream(
                 }
             }
         } catch (e: IOException) {
-            CallbackCommon.logCallback(ServiceInfoLog.LogError, "${e.message}")
+            CallbackCommon.logCallback(AppLogType.LogError, "${e.message}")
             e.printStackTrace()
         } finally {
             try {
                 br.close()
             } catch (e: IOException) {
-                CallbackCommon.logCallback(ServiceInfoLog.LogError, "${e.message}")
+                CallbackCommon.logCallback(AppLogType.LogError, "${e.message}")
                 e.printStackTrace()
             }
             try {
                 bw.close()
             } catch (e: IOException) {
-                CallbackCommon.logCallback(ServiceInfoLog.LogError, "${e.message}")
+                CallbackCommon.logCallback(AppLogType.LogError, "${e.message}")
                 e.printStackTrace()
             }
         }
