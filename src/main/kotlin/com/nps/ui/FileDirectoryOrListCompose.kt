@@ -103,7 +103,7 @@ private fun TopActionBarCompose(
                     .clickable {
                         File(rootDirectoryState.value).parent?.let {
                             rootDirectoryState.value = it
-                            ClientSocket.sentMsg(SocketInteractiveKey.GetDirectory, it, "")
+                            ClientSocket.sentMsg(SocketInteractiveKey.GetDirectory, it)
                         }
                     }
             )
@@ -190,7 +190,7 @@ private fun RightLazyColumnCompose(
         CallbackCommon.directoryListCallback = {
             filesListState.value = it
         }
-        ClientSocket.connect(rootDirectoryState.value)
+        ClientSocket.connect()
     }
 
     LazyColumn(
@@ -202,21 +202,16 @@ private fun RightLazyColumnCompose(
                     interactiveData = file,
                     directoryClick = {
                         rootDirectoryState.value = file.filePath
-                        ClientSocket.sentMsg(SocketInteractiveKey.GetDirectory, file.filePath, "")
+                        ClientSocket.sentMsg(SocketInteractiveKey.GetDirectory, file.filePath)
                     }
                 )
             } else {
                 FileCompose(
                     interactiveData = file,
                     downloadClick = {
-                        file.fileName + file.filePath.subSequence(
-                            file.filePath.lastIndexOf("."),
-                            file.filePath.length
-                        )
                         ClientSocket.sentMsg(
                             SocketInteractiveKey.DownloadFile,
                             file.filePath,
-                            "C:\\Users\\AOC\\Desktop\\${file.fileName}.${file.filePath.suffixText(".")}",
                             fileSize = file.fileSize
                         )
                     }

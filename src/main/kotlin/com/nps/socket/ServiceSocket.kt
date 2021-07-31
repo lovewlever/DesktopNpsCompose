@@ -9,8 +9,8 @@ object ServiceSocket {
         ServerSocketConnect()
     }
 
-    fun startServer() {
-        serverSocketConnect.startServer()
+    fun startServer(port: Int) {
+        serverSocketConnect.startServer(port)
     }
 
     fun closeServer() {

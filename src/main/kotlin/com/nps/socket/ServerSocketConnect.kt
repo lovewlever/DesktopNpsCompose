@@ -10,11 +10,11 @@ import java.net.Socket
 class ServerSocketConnect {
     protected var serverSocket: ServerSocket? = null
 
-    fun startServer() {
+    fun startServer(port: Int) {
         if (serverSocket != null && serverSocket?.isClosed == false) return
         ThreadPoolCommon.scheduled.execute {
             try {
-                serverSocket = ServerSocket(8025)
+                serverSocket = ServerSocket(port)
                 CallbackCommon.logCallback(AppLogType.LogInfo, "启动成功，等待连接")
                 while (true) {
                     val accept = serverSocket?.accept()
@@ -26,13 +26,6 @@ class ServerSocketConnect {
                 e.printStackTrace()
             }
         }
-    }
-
-    fun restartServer() {
-        serverSocket?.close()
-        serverSocket = null
-        System.gc()
-        startServer()
     }
 
     fun closeServer() {

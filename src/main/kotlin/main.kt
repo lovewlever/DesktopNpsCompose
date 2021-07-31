@@ -61,6 +61,7 @@ fun main() = Window(
                 Row(
                     modifier = Modifier.fillMaxSize()
                 ) {
+
                     when (serviceTypeState) {
                         is AppPageNav.TypeServer -> {
                             ServicePageCompose(
@@ -80,6 +81,10 @@ fun main() = Window(
                         else -> {
                         }
                     }
+
+                    ServicePageCompose(
+                        modifier = Modifier.fillMaxSize()
+                    )
                 }
             }
         }
