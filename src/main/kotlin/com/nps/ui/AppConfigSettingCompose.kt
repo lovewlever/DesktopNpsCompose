@@ -88,11 +88,20 @@ fun AppConfigSettingCompose(
     }
 }
 
+/**
+ * 服务端设置
+ */
 @Composable
 private fun ServerSettingCompose(
     modifier: Modifier = Modifier,
     appConfigDataState: MutableState<AppConfigData>
 ) {
+
+    val serverPortState = remember {
+        mutableStateOf(appConfigDataState.value.serverConfig.portAddress)
+    }
+
+    serverPortState.value = appConfigDataState.value.serverConfig.portAddress
 
     LazyColumn(
         modifier = modifier,
@@ -109,8 +118,11 @@ private fun ServerSettingCompose(
                 modifier = Modifier.fillMaxWidth(),
                 maxLines = 1,
                 singleLine = true,
-                value = appConfigDataState.value.serverConfig.portAddress,
-                onValueChange = { appConfigDataState.value.serverConfig.portAddress = it },
+                value = serverPortState.value,
+                onValueChange = {
+                    serverPortState.value = it
+                    appConfigDataState.value.serverConfig.portAddress = it
+                },
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Number
                 ),
@@ -122,6 +134,9 @@ private fun ServerSettingCompose(
     }
 }
 
+/**
+ * 客户端设置
+ */
 @Composable
 private fun ClientSettingCompose(
     modifier: Modifier = Modifier,
@@ -129,11 +144,11 @@ private fun ClientSettingCompose(
 ) {
 
     val settingList = arrayOf(
-        "远程访问IP",
-        "远程访问端口",
-        "npcParam",
-        "远程根目录",
-        "文件下载保存目录"
+        "远程访问IP" to mutableStateOf(appConfigDataState.value.clientConfig.ipAddress),
+        "远程访问端口" to mutableStateOf(appConfigDataState.value.clientConfig.portAddress),
+        "npcParam" to mutableStateOf(appConfigDataState.value.clientConfig.npcParam),
+        "远程根目录" to mutableStateOf(appConfigDataState.value.clientConfig.remoteRootPath),
+        "文件下载保存目录" to mutableStateOf(appConfigDataState.value.clientConfig.fileDownloadSavePath)
     )
 
     LazyColumn(
@@ -149,34 +164,52 @@ private fun ClientSettingCompose(
         }
         itemsIndexed(settingList) { index, item ->
             Spacer(modifier = Modifier.height(8.dp))
-            OutlinedTextField(
-                modifier = Modifier.fillMaxWidth(),
-                maxLines = 1,
-                singleLine = true,
-                value = when (index) {
-                    0 -> appConfigDataState.value.clientConfig.ipAddress
-                    1 -> appConfigDataState.value.clientConfig.portAddress
-                    2 -> appConfigDataState.value.clientConfig.npcParam
-                    3 -> appConfigDataState.value.clientConfig.remoteRootPath
-                    4 -> appConfigDataState.value.clientConfig.fileDownloadSavePath
-                    else -> ""
-                },
-                onValueChange = {
+            SettingOutlinedTextFieldCompose(
+                text = item.second.value,
+                label = item.first,
+                onChange = {
+                    item.second.value = it
                     when (index) {
-                        0 -> appConfigDataState.value.clientConfig.ipAddress = it
-                        1 -> appConfigDataState.value.clientConfig.portAddress = it
-                        2 -> appConfigDataState.value.clientConfig.npcParam = it
-                        3 -> appConfigDataState.value.clientConfig.remoteRootPath = it
-                        4 -> appConfigDataState.value.clientConfig.fileDownloadSavePath = it
+                        0 -> {
+                            appConfigDataState.value.clientConfig.ipAddress = it
+                        }
+                        1 -> {
+                            appConfigDataState.value.clientConfig.portAddress = it
+                        }
+                        2 -> {
+                            appConfigDataState.value.clientConfig.npcParam = it
+                        }
+                        3 -> {
+                            appConfigDataState.value.clientConfig.remoteRootPath = it
+                        }
+                        4 -> {
+                            appConfigDataState.value.clientConfig.fileDownloadSavePath = it
+                        }
                     }
-                },
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Number
-                ),
-                label = {
-                    Text(text = item)
                 }
             )
         }
     }
+}
+
+
+@Composable
+private fun SettingOutlinedTextFieldCompose(
+    text: String,
+    label: String,
+    onChange: (String) -> Unit
+) {
+    OutlinedTextField(
+        modifier = Modifier.fillMaxWidth(),
+        maxLines = 1,
+        singleLine = true,
+        value = text,
+        onValueChange = onChange,
+        keyboardOptions = KeyboardOptions(
+            keyboardType = KeyboardType.Number
+        ),
+        label = {
+            Text(text = label)
+        }
+    )
 }

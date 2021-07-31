@@ -11,6 +11,7 @@ group = "me.lkpc"
 version = "1.0"
 
 repositories {
+    google()
     jcenter()
     mavenCentral()
     maven { url = uri("https://maven.pkg.jetbrains.space/public/p/compose/dev") }
@@ -19,7 +20,6 @@ repositories {
 dependencies {
     implementation(compose.desktop.currentOs)
     implementation (group = "com.google.code.gson", name = "gson", version = "2.8.7")
-
 }
 
 tasks.withType<KotlinCompile>() {

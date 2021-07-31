@@ -3,9 +3,10 @@ package com.nps.ui
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.material.Button
+import androidx.compose.material.OutlinedTextField
+import androidx.compose.material.Surface
+import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -14,92 +15,15 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.nps.common.AppConfigCommon
-import com.nps.common.NPCCommon
-import com.nps.common.AppPageNav
 import com.nps.model.AppConfigData
 import kotlinx.coroutines.launch
 import java.util.regex.Pattern
 
 /**
- * 启动时选择服务方式
- */
-@Composable
-fun ChooseServiceTypeCompose(
-    modifier: Modifier = Modifier,
-    typeClick: (AppPageNav) -> Unit = {}
-) {
-
-    val clientDialogConfigState = remember {
-        mutableStateOf(false)
-    }
-
-    val serverDialogConfigState = remember {
-        mutableStateOf(false)
-    }
-
-    Box(
-        modifier = modifier,
-        contentAlignment = Alignment.Center
-    ) {
-        Row{
-            Button(
-                onClick = {
-                    serverDialogConfigState.value = true
-                }
-            ) {
-                Text(
-                    text = "作为服务端启动"
-                )
-            }
-
-            InputServerPortDialogCompose(
-                showDialogState = serverDialogConfigState,
-                confirmClick = { acd ->
-                    typeClick(AppPageNav.TypeServer)
-                }
-            )
-
-            Spacer(modifier = Modifier.width(24.dp))
-
-            Button(
-                onClick = {
-                    clientDialogConfigState.value = true
-                }
-            ) {
-                Text(
-                    text = "作为客户端启动"
-                )
-            }
-
-            InputAddressAndPortDialogCompose(
-                showDialogState = clientDialogConfigState,
-                confirmClick = { acd ->
-                    NPCCommon.startNpcClient(acd.clientConfig.npcParam)
-                    typeClick(AppPageNav.TypeClient)
-                }
-            )
-
-
-            Spacer(modifier = Modifier.width(24.dp))
-
-            Button(
-                onClick = {
-                    typeClick(AppPageNav.TypeAppConfigSetting)
-                }
-            ) {
-                Text(
-                    text = "设置"
-                )
-            }
-        }
-    }
-}
-
-/**
  * 客户端 输入Ip，端口，npc参数
  */
 @Composable
-private fun InputAddressAndPortDialogCompose(
+fun ClientInputAddressAndPortDialogCompose(
     showDialogState: MutableState<Boolean>,
     confirmClick: (config: AppConfigData) -> Unit = {  }
 ) {
@@ -243,7 +167,7 @@ private fun InputAddressAndPortDialogCompose(
  * 服务端 输入Ip，端口，npc参数
  */
 @Composable
-private fun InputServerPortDialogCompose(
+fun ServerInputServerPortDialogCompose(
     showDialogState: MutableState<Boolean>,
     confirmClick: (AppConfigData) -> Unit = {  }
 ) {

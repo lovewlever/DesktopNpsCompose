@@ -26,12 +26,14 @@ fun ServicePageCompose(
     val infoListState = remember {
         mutableStateListOf<Pair<AppLogType, String>>(AppLogType.LogInfo to "")
     }
-
-    SideEffect {
+    DisposableEffect(key1 = Unit) {
         CallbackCommon.logCallback = { serviceInfoLog, string ->
             infoListState.add(serviceInfoLog to string)
         }
         ServiceSocket.startServer()
+        onDispose {
+            ServiceSocket.closeServer()
+        }
     }
 
     val lazyScrollState = rememberLazyListState()

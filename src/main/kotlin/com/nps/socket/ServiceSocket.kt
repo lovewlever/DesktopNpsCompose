@@ -12,4 +12,8 @@ object ServiceSocket {
     fun startServer() {
         serverSocketConnect.startServer()
     }
+
+    fun closeServer() {
+        serverSocketConnect.closeServer()
+    }
 }

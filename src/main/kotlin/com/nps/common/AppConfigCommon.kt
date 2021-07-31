@@ -1,14 +1,9 @@
 package com.nps.common
 
-import com.google.gson.Gson
 import com.nps.model.AppConfigData
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import java.io.BufferedReader
-import java.io.FileReader
-import java.io.FileWriter
-import java.io.PrintWriter
-import java.lang.StringBuilder
+import java.io.*
 
 object AppConfigCommon {
 
@@ -30,5 +25,5 @@ object AppConfigCommon {
     }
 
     private fun getConfigFilePath(): String =
-        "${System.getProperty("user.dir")}\\src\\main\\resources\\config.json"
+        "${System.getProperty("user.dir")}${File.separator}src${File.separator}main${File.separator}resources${File.separator}config.json"
 }

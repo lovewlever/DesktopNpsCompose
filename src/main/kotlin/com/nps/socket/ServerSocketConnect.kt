@@ -35,6 +35,11 @@ class ServerSocketConnect {
         startServer()
     }
 
+    fun closeServer() {
+        serverSocket?.close()
+        System.gc()
+    }
+
 }
 
 internal class DataProgressServerStream(
