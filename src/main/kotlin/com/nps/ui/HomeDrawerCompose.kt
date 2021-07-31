@@ -41,7 +41,7 @@ fun HomeDrawerCompose(
         confirmClick = {
             coroutineScope.launch {
                 AppConfigCommon.getConfigData()?.clientConfig?.npcParam?.let {
-                    //NPCCommon.startNpcClient(it)
+                    NPCCommon.startNpcClient(it)
                     openPageClick(AppPageNav.TypeClient)
                 } ?: let {
                     CallbackCommon.logCallback(AppLogType.LogError, "未设置NpcParam")

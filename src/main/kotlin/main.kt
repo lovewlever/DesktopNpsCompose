@@ -10,6 +10,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.svgResource
 import androidx.compose.ui.unit.dp
 import com.nps.common.AppPageNav
+import com.nps.common.NPCCommon
 import com.nps.theme.DesktopNpsComposeTheme
 import com.nps.ui.*
 import kotlinx.coroutines.launch
@@ -21,6 +22,12 @@ fun main() = Window(
     val coroutineScope = rememberCoroutineScope()
     var serviceTypeState: AppPageNav by remember {
         mutableStateOf(AppPageNav.TypeAppConfigSetting)
+    }
+
+    DisposableEffect(key1 = Unit) {
+        onDispose {
+            NPCCommon.destroyExec()
+        }
     }
 
     DesktopNpsComposeTheme {
