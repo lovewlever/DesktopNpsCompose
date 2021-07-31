@@ -133,8 +133,3 @@ object ClientSocket {
         }
     }
 }
-
-fun main() {
-    val arr = "0xfb".toByteArray()
-    println()
-}

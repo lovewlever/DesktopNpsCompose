@@ -57,8 +57,9 @@ internal class DataProgressServerStream(
         FileInputStream(localPath).use { fis ->
             var len : Int
             bos.write(SocketInteractiveKey.Download.toByteArray())
-            while (fis.read().also { len = it } != -1) {
-                bos.write(len)
+            val array = ByteArray(8192)
+            while (fis.read(array).also { len = it } != -1) {
+                bos.write(array, 0, len)
             }
             bos.write(SocketInteractiveKey.StreamDone.toByteArray())
             bos.flush()
