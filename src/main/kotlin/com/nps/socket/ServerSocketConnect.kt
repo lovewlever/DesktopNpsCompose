@@ -56,12 +56,12 @@ internal class DataProgressServerStream(
     private fun sentFileStream(localPath: String, bos: BufferedOutputStream) {
         FileInputStream(localPath).use { fis ->
             var len : Int
-            bos.write(SocketInteractiveKey.Download.toByteArray())
+            bos.write(SocketStreamType.ByteStream.toByteArray())
             val array = ByteArray(8192)
             while (fis.read(array).also { len = it } != -1) {
                 bos.write(array, 0, len)
             }
-            bos.write(SocketInteractiveKey.StreamDone.toByteArray())
+            bos.write(SocketStreamType.StreamDone.toByteArray())
             bos.flush()
             //socket.shutdownOutput()
         }
@@ -73,7 +73,7 @@ internal class DataProgressServerStream(
     private fun sentLocalDirectoryList(localPath: String, bw: BufferedOutputStream) {
         val file = File(localPath)
         if (file.isFile) {
-            bw.write(SocketInteractiveKey.GetDirectory.toByteArray())
+            bw.write(SocketStreamType.CharacterStream.toByteArray())
             bw.write(
                 GsonCommon.gson.toJson(
                     mutableListOf(InteractiveData(
@@ -83,7 +83,7 @@ internal class DataProgressServerStream(
                     ))
                 ).encodeToByteArray()
             )
-            bw.write(SocketInteractiveKey.StreamDone.toByteArray())
+            bw.write(SocketStreamType.StreamDone.toByteArray())
             bw.flush()
         } else if (file.isDirectory) {
             file.listFiles()?.map { f ->
@@ -94,11 +94,11 @@ internal class DataProgressServerStream(
                     isDirectory = f.isDirectory
                 )
             }?.let { list: List<InteractiveData> ->
-                bw.write(SocketInteractiveKey.GetDirectory.toByteArray())
+                bw.write(SocketStreamType.CharacterStream.toByteArray())
                 bw.write(
                     GsonCommon.gson.toJson(list).encodeToByteArray()
                 )
-                bw.write(SocketInteractiveKey.StreamDone.toByteArray())
+                bw.write(SocketStreamType.StreamDone.toByteArray())
                 bw.flush()
             }
         }

@@ -30,7 +30,7 @@ object ClientSocket {
         }
     }
 
-    fun sentMsg(key: String, filePath: String, savePath: String) {
+    fun sentMsg(key: Int, filePath: String, savePath: String) {
         printWriter?.println(GsonCommon.gson.toJson(InteractiveData(key = key, value = filePath)))
         inputStreamProgress(savePath)
     }
@@ -67,37 +67,34 @@ object ClientSocket {
                 val eFlag =
                     byteArray.copyOfRange(0, len).filterIndexed { index, byte -> index > len - 5 }.toByteArray()
                         .decodeToString()
-
                 // 开始标识符
                 when (sFlag) {
-                    SocketInteractiveKey.GetDirectory, SocketInteractiveKey.Download -> {
+                    SocketStreamType.CharacterStream, SocketStreamType.ByteStream -> {
                         AppLogCallbackCommon.logCallback(ServiceInfoLog.LogInfo, "标识符：${startFlag}")
                         byteArray = byteArray.copyOfRange(4, size)
                         len -= 4
                         startFlag = sFlag
                     }
                 }
-                if (eFlag == SocketInteractiveKey.StreamDone) {
+                if (eFlag == SocketStreamType.StreamDone) {
                     len -= 4
                 }
-
                 when (startFlag) {
-                    SocketInteractiveKey.GetDirectory -> {
+                    SocketStreamType.CharacterStream -> {
                         byteArrayOutputStream.write(byteArray, 0, len)
                     }
-                    SocketInteractiveKey.Download -> {
+                    SocketStreamType.ByteStream -> {
                         bos?.write(byteArray, 0, len)
                     }
                 }
-
-                if (eFlag == SocketInteractiveKey.StreamDone) {
+                if (eFlag == SocketStreamType.StreamDone) {
                     AppLogCallbackCommon.logCallback(ServiceInfoLog.LogInfo, "标识符：${eFlag}")
                     break
                 }
             }
 
             when (startFlag) {
-                SocketInteractiveKey.GetDirectory -> {
+                SocketStreamType.CharacterStream -> {
                     progressJson(byteArrayOutputStream)
                 }
             }
