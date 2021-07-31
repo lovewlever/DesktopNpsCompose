@@ -34,5 +34,6 @@ object NPCCommon {
     fun destroyExec() {
         process?.destroy()
         process?.destroyForcibly()
+        Runtime.getRuntime().exit(9)
     }
 }
