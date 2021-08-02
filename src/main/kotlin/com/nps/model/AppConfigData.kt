@@ -20,4 +20,5 @@ class ClientConfig {
 @Stable
 class ServerConfig {
     var portAddress: String = ""
+    var npcParam: String = ""
 }

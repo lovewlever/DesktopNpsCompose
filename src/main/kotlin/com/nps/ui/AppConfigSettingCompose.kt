@@ -84,7 +84,6 @@ fun AppConfigSettingCompose(
 
             Spacer(modifier = Modifier.height(16.dp))
         }
-
     }
 }
 
@@ -97,11 +96,10 @@ private fun ServerSettingCompose(
     appConfigDataState: MutableState<AppConfigData>
 ) {
 
-    val serverPortState = remember {
-        mutableStateOf(appConfigDataState.value.serverConfig.portAddress)
-    }
-
-    serverPortState.value = appConfigDataState.value.serverConfig.portAddress
+    val settingList = arrayOf(
+        "监听端口" to mutableStateOf(appConfigDataState.value.serverConfig.portAddress),
+        "npcParam" to mutableStateOf(appConfigDataState.value.serverConfig.npcParam)
+    )
 
     LazyColumn(
         modifier = modifier,
@@ -113,21 +111,23 @@ private fun ServerSettingCompose(
                 text = "服务端设置",
                 style = MaterialTheme.typography.h5,
             )
+        }
+
+        itemsIndexed(settingList) { index, item ->
             Spacer(modifier = Modifier.height(8.dp))
-            OutlinedTextField(
-                modifier = Modifier.fillMaxWidth(),
-                maxLines = 1,
-                singleLine = true,
-                value = serverPortState.value,
-                onValueChange = {
-                    serverPortState.value = it
-                    appConfigDataState.value.serverConfig.portAddress = it
-                },
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Number
-                ),
-                label = {
-                    Text(text = "监听端口")
+            SettingOutlinedTextFieldCompose(
+                text = item.second.value,
+                label = item.first,
+                onChange = {
+                    item.second.value = it
+                    when (index) {
+                        0 -> {
+                            appConfigDataState.value.serverConfig.portAddress = it
+                        }
+                        1 -> {
+                            appConfigDataState.value.serverConfig.npcParam = it
+                        }
+                    }
                 }
             )
         }
